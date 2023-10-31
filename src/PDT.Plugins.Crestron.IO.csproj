@@ -58,6 +58,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.GeneralIO.dll</HintPath>
     </Reference>
+    <Reference Include="Crestron.SimplSharpPro.Remotes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.Remotes.dll</HintPath>
+    </Reference>
     <Reference Include="Crestron.SimplSharpPro.ThreeSeriesCards, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\ProgramData\Crestron\SDK\SSPDevices\Crestron.SimplSharpPro.ThreeSeriesCards.dll</HintPath>
@@ -99,7 +103,9 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ButtonExtensions.cs" />
     <Compile Include="C2nIoController.cs" />
+    <Compile Include="C2NIoControllerFactory.cs" />
     <Compile Include="C2nRthsController.cs" />
     <Compile Include="C3CardControllerBase.cs" />
     <Compile Include="C3Com3Controller.cs" />
@@ -107,15 +113,37 @@
     <Compile Include="C3Ir8Controller.cs" />
     <Compile Include="C3Ry16Controller.cs" />
     <Compile Include="C3Ry8Controller.cs" />
+    <Compile Include="CenCi31Configuration.cs" />
     <Compile Include="CenCi31Controller.cs" />
+    <Compile Include="CenCi31ControllerFactory.cs" />
+    <Compile Include="CenCi33Configuration.cs" />
     <Compile Include="CenCi33Controller.cs" />
+    <Compile Include="CenCi33ControllerFactory.cs" />
+    <Compile Include="CenCn2Controller.cs" />
     <Compile Include="CenIoDigIn104Controller.cs" />
+    <Compile Include="CenIoDigIn104ControllerFactory.cs" />
     <Compile Include="CenIoIr104Controller.cs" />
+    <Compile Include="CenIoIr104ControllerFactory.cs" />
     <Compile Include="CenIoRy104Controller.cs" />
-    <Compile Include="Class1.cs" />
-    <Compile Include="DinCenCnController.cs" />
+    <Compile Include="CenIoRy104ControllerFactory.cs" />
+    <Compile Include="CenOdtOccupancySensorBaseController.cs" />
+    <Compile Include="CenRfgwController.cs" />
+    <Compile Include="CrestronRemotePropertiesConfig.cs" />
+    <Compile Include="DinCenCn2Controller.cs" />
     <Compile Include="DinIo8Controller.cs" />
+    <Compile Include="DinIo8ControllerFactory.cs" />
+    <Compile Include="EssentialsRfGatewayConfig.cs" />
+    <Compile Include="GlsOccupancySensorBaseController.cs" />
+    <Compile Include="GlsOccupancySensorPropertiesConfig.cs" />
+    <Compile Include="GlsOdtOccupancySensorController.cs" />
+    <Compile Include="GlsOirOccupancySensorController.cs" />
+    <Compile Include="GlsPartitionSensorController.cs" />
+    <Compile Include="GlsPartitionSensorPropertiesConfig.cs" />
+    <Compile Include="Hrxx0WirelessRemoteController.cs" />
+    <Compile Include="InternalCardCageConfiguration.cs" />
     <Compile Include="InternalCardCageController.cs" />
+    <Compile Include="InternalCardCageControllerFactory.cs" />
+    <Compile Include="OccupancyAggregatorConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusSignController.cs" />
     <None Include="Properties\ControlSystem.cfg" />
