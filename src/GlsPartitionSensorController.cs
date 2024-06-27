@@ -22,6 +22,14 @@ namespace PDT.Plugins.Crestron.IO
 
 		public BoolFeedback EnableFeedback { get; private set; }
 		public BoolFeedback PartitionPresentFeedback { get; private set; }
+
+		public bool PartitionPresent 
+		{
+			get
+			{
+				return InTestMode ? TestPartitionSensedFeedback : _partitionSensor.PartitionSensedFeedback.BoolValue;
+			}
+		}
 		public BoolFeedback PartitionNotSensedFeedback { get; private set; }
 		public IntFeedback SensitivityFeedback { get; private set; }
 
@@ -321,7 +329,7 @@ namespace PDT.Plugins.Crestron.IO
             if (cresnetBridge != null)
             {
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
-                return new GlsPartCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
+                return new GlsPartCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
             Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;

@@ -124,11 +124,11 @@ namespace PDT.Plugins.Crestron.IO
 
                 if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new CenErfgwPoeCresnet(cresnetId, cresnetBridge.Branches[branchId]);
+                    return new CenErfgwPoeCresnet(cresnetId, cresnetBridge.Branches[(uint)branchId]);
                 }
                 if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[branchId]);
+                    return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[(uint)branchId]);
                 }
             }
             Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);

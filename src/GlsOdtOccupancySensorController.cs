@@ -272,7 +272,7 @@ namespace PDT.Plugins.Crestron.IO
             if (cresnetBridge != null)
             {
                 Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
-                return new GlsOdtCCn(cresnetId, cresnetBridge.CresnetBranches[branchId]);
+                return new GlsOdtCCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
             Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
             return null;
