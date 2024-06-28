@@ -7,10 +7,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PDT.Plugins.Crestron.IO
 {
-    public class DinIo8ControllerFactory : EssentialsDeviceFactory<DinIo8Controller>
+    public class DinIo8ControllerFactory : EssentialsPluginDeviceFactory<DinIo8Controller>
     {
         public DinIo8ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string>() { "DinIo8" };
         }
 

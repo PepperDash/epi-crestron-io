@@ -240,10 +240,13 @@ namespace PDT.Plugins.Crestron.IO
 
 	}
 
-    public class GlsOdtOccupancySensorControllerFactory : EssentialsDeviceFactory<GlsOdtOccupancySensorController>
+    public class GlsOdtOccupancySensorControllerFactory : EssentialsPluginDeviceFactory<GlsOdtOccupancySensorController>
     {
         public GlsOdtOccupancySensorControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string> { "glsodtccn" };
         }
 

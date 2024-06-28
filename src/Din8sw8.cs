@@ -46,10 +46,13 @@ namespace PDT.Plugins.Crestron.IO
         }
     }
 
-    public class Din8sw8ControllerFactory : EssentialsDeviceFactory<Din8sw8Controller>
+    public class Din8sw8ControllerFactory : EssentialsPluginDeviceFactory<Din8sw8Controller>
     {
         public Din8sw8ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string>() { "din8sw8" };
         }
 

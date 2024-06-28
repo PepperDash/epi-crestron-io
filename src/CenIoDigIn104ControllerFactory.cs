@@ -6,10 +6,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PDT.Plugins.Crestron.IO
 {
-    public class CenIoDigIn104ControllerFactory : EssentialsDeviceFactory<CenIoDigIn104Controller>
+    public class CenIoDigIn104ControllerFactory : EssentialsPluginDeviceFactory<CenIoDigIn104Controller>
     {
         public CenIoDigIn104ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string>() { "ceniodigin104" };
         }
 

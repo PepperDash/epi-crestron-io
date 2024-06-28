@@ -131,10 +131,13 @@ namespace PDT.Plugins.Crestron.IO
         }
         #endregion
 
-        public class C2nRthsControllerFactory : EssentialsDeviceFactory<C2nRthsController>
+        public class C2nRthsControllerFactory : EssentialsPluginDeviceFactory<C2nRthsController>
         {
             public C2nRthsControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
                 TypeNames = new List<string>() { "c2nrths" };
             }
 

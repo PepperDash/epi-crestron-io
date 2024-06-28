@@ -202,10 +202,13 @@ namespace PDT.Plugins.Crestron.IO
         }
         #endregion
 
-        public class StatusSignControllerFactory : EssentialsDeviceFactory<StatusSignController>
+        public class StatusSignControllerFactory : EssentialsPluginDeviceFactory<StatusSignController>
         {
             public StatusSignControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
                 TypeNames = new List<string>() { "statussign" };
             }
 

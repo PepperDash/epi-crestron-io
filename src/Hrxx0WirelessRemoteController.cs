@@ -201,10 +201,13 @@ namespace PDT.Plugins.Crestron.IO
         #endregion
 
         #region Factory
-        public class Hrxx0WirelessRemoteControllerFactory : EssentialsDeviceFactory<Hrxx0WirelessRemoteController>
+        public class Hrxx0WirelessRemoteControllerFactory : EssentialsPluginDeviceFactory<Hrxx0WirelessRemoteController>
         {
             public Hrxx0WirelessRemoteControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
                 TypeNames = new List<string>() { "hr100", "hr150", "hr310" };
             }
 

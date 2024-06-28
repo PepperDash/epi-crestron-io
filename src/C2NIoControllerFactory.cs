@@ -7,10 +7,13 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PDT.Plugins.Crestron.IO
 {
-    public class C2NIoControllerFactory : EssentialsDeviceFactory<C2NIoController>
+    public class C2NIoControllerFactory : EssentialsPluginDeviceFactory<C2NIoController>
     {
         public C2NIoControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string>() { "c2nio" };
         }
 

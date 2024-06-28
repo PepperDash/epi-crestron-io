@@ -6,14 +6,17 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PDT.Plugins.Crestron.IO
 {
-    public class CenCi31ControllerFactory : EssentialsDeviceFactory<CenCi31Controller>
+    public class CenCi31ControllerFactory : EssentialsPluginDeviceFactory<CenCi31Controller>
     {
         public CenCi31ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string> {"cenci31"};
         }
 
-        #region Overrides of EssentialsDeviceFactory<CenCi31Controller>
+        #region Overrides of EssentialsPluginDeviceFactory<CenCi31Controller>
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {

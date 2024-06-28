@@ -9,6 +9,9 @@ namespace PDT.Plugins.Crestron.IO
     {
         public CenIoCom102ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string> {"ceniocom102",};
         }
 

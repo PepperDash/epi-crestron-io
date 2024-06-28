@@ -145,10 +145,13 @@ namespace PDT.Plugins.Crestron.IO
 
         #region Factory
 
-        public class CenRfgwControllerFactory : EssentialsDeviceFactory<CenRfgwController>
+        public class CenRfgwControllerFactory : EssentialsPluginDeviceFactory<CenRfgwController>
         {
             public CenRfgwControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
                 TypeNames = new List<string> {"cenrfgwex", "cenerfgwpoe"};
             }
 

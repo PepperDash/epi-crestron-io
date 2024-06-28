@@ -5,13 +5,16 @@ using PepperDash.Essentials.Core.Config;
 
 namespace PDT.Plugins.Crestron.IO
 {
-    public class InternalCardCageControllerFactory : EssentialsDeviceFactory<InternalCardCageController>
+    public class InternalCardCageControllerFactory : EssentialsPluginDeviceFactory<InternalCardCageController>
     {
         public InternalCardCageControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string> {"internalcardcage"};
         }
-        #region Overrides of EssentialsDeviceFactory<InternalCardCageController>
+        #region Overrides of EssentialsPluginDeviceFactory<InternalCardCageController>
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {

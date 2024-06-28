@@ -739,11 +739,14 @@ namespace PDT.Plugins.Crestron.IO
             occController.IdentityModeFeedback.LinkInputSig(trilist.BooleanInput[joinMap.IdentityModeFeedback.JoinNumber]);
 		}
 
-		public class CenOdtOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<CenOdtOccupancySensorBaseController>
+		public class CenOdtOccupancySensorBaseControllerFactory : EssentialsPluginDeviceFactory<CenOdtOccupancySensorBaseController>
 		{
 			public CenOdtOccupancySensorBaseControllerFactory()
 			{
-				TypeNames = new List<string>() { "cenodtcpoe", "cenodtocc" };
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
+                TypeNames = new List<string>() { "cenodtcpoe", "cenodtocc" };
 			}
 
 			public override EssentialsDevice BuildDevice(DeviceConfig dc)

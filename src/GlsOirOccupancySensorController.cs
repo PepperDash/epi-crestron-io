@@ -39,10 +39,13 @@ namespace PDT.Plugins.Crestron.IO
         #endregion
     }
 
-    public class GlsOccupancySensorBaseControllerFactory : EssentialsDeviceFactory<GlsOccupancySensorBaseController>
+    public class GlsOccupancySensorBaseControllerFactory : EssentialsPluginDeviceFactory<GlsOccupancySensorBaseController>
     {
         public GlsOccupancySensorBaseControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string> { "glsoirccn" };
         }
 

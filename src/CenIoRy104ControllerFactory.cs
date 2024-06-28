@@ -9,13 +9,16 @@ namespace PDT.Plugins.Crestron.IO
     /// <summary>
     /// CEN-IO-RY Controller factory
     /// </summary>
-    public class CenIoRy104ControllerFactory : EssentialsDeviceFactory<CenIoRy104Controller>
+    public class CenIoRy104ControllerFactory : EssentialsPluginDeviceFactory<CenIoRy104Controller>
     {
         /// <summary>
         /// Constructor
         /// </summary>
         public CenIoRy104ControllerFactory()
         {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
             TypeNames = new List<string>() { "ceniory104" };
         }
 

@@ -25,10 +25,13 @@ namespace PDT.Plugins.Crestron.IO
             _device = device;
         }
 
-        public class DinCenCn2ControllerFactory : EssentialsDeviceFactory<DinCenCn2Controller>
+        public class DinCenCn2ControllerFactory : EssentialsPluginDeviceFactory<DinCenCn2Controller>
         {
             public DinCenCn2ControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
+
                 TypeNames = new List<string>() { "dincencn2", "dincencn2poe", "din-cencn2", "din-cencn2-poe" };
             }
 

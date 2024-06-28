@@ -337,10 +337,14 @@ namespace PDT.Plugins.Crestron.IO
         #endregion
 
 
-        public class GlsPartitionSensorControllerFactory : EssentialsDeviceFactory<GlsPartitionSensorController>
+        public class GlsPartitionSensorControllerFactory : EssentialsPluginDeviceFactory<GlsPartitionSensorController>
         {
+
+
             public GlsPartitionSensorControllerFactory()
             {
+                MinimumEssentialsFrameworkVersion = "2.0.0";
+
                 TypeNames = new List<string> { "glspartcn" };
             }
 
