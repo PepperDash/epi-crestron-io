@@ -12,5 +12,8 @@ namespace PDT.Plugins.Crestron.IO
         /// </remarks>
         [JsonProperty("sensitivity")]
         public ushort? Sensitivity { get; set; }
+
+        [JsonProperty("enable")]
+        public bool? EnableSensor { get; set; }
     }
 }
