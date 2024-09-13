@@ -8,16 +8,18 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 
 namespace PDT.Plugins.Crestron.IO
 {
     [Description("Wrapper class for the C2N-RTHS sensor")]
-    public class C2nRthsController : CrestronGenericBridgeableBaseDevice
+    public class C2nRthsController : CrestronGenericBridgeableBaseDevice, ITemperatureSensor, IHumiditySensor
     {
         private C2nRths _device;
 
         public IntFeedback TemperatureFeedback { get; private set; }
+
+        public BoolFeedback TemperatureInCFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
         public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc,
@@ -32,6 +34,7 @@ namespace PDT.Plugins.Crestron.IO
                 RegisterCrestronGenericBase(_device);
 
                 TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
+                TemperatureInCFeedback = new BoolFeedback(() => _device.TemperatureFormat.BoolValue);
                 HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
 
                 if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
@@ -45,6 +48,7 @@ namespace PDT.Plugins.Crestron.IO
             {
                 case C2nRths.TemperatureFeedbackEventId:
                     TemperatureFeedback.FireUpdate();
+                    TemperatureInCFeedback.FireUpdate();
                     break;
                 case C2nRths.HumidityFeedbackEventId:
                     HumidityFeedback.FireUpdate();
@@ -55,6 +59,8 @@ namespace PDT.Plugins.Crestron.IO
         public void SetTemperatureFormat(bool setToC)
         {
             _device.TemperatureFormat.BoolValue = setToC;
+
+            TemperatureInCFeedback.FireUpdate();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
