@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
@@ -17,7 +19,8 @@ namespace PDT.Plugins.Crestron.IO
     public class C2nRthsController : CrestronGenericBridgeableBaseDevice, ITemperatureSensor, IHumiditySensor
     {
         private C2nRths _device;
-
+        private readonly CTimer _pollTimer;
+        
         public IntFeedback TemperatureFeedback { get; private set; }
         public BoolFeedback TemperatureInCFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
@@ -25,6 +28,12 @@ namespace PDT.Plugins.Crestron.IO
         public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc, DeviceConfig config)
             : base(key, config.Name)
         {
+            _pollTimer = new CTimer(
+                _ => Feedbacks.ToList().ForEach(f => f.FireUpdate()), 
+                this,
+                TimeSpan.FromSeconds(30).Milliseconds, 
+                TimeSpan.FromSeconds(30).Milliseconds);
+            
             AddPreActivationAction(() =>
             {
                 _device = preActivationFunc(config);
@@ -44,9 +53,7 @@ namespace PDT.Plugins.Crestron.IO
                 _device.BaseEvent += DeviceOnBaseEvent;
                 
                 _device.OnlineStatusChange += (d, args) => 
-                    Debug.Console(0, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
-
-                UpdateFeedbacksWhenOnline();
+                    Debug.Console(1, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
             });
         }
 
