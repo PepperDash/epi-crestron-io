@@ -9,6 +9,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PDT.Plugins.Crestron.IO
 {
@@ -32,18 +33,21 @@ namespace PDT.Plugins.Crestron.IO
                     Debug.Console(0, this, "ERROR: Unable to create C2nRths Device");
                     return;
                 }
-                
+
+                RegisterCrestronGenericBase(_device);
+                    
                 TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
                 TemperatureInCFeedback = new BoolFeedback(() => _device.TemperatureFormat.BoolValue);
                 HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
                 
-                _device.BaseEvent          += DeviceOnBaseEvent;
-                _device.OnlineStatusChange += (o, args) => UpdateFeedbacksWhenOnline();
+                Feedbacks.AddRange(new List<Feedback> { TemperatureFeedback, TemperatureInCFeedback, HumidityFeedback });
+                _device.BaseEvent += DeviceOnBaseEvent;
                 
+                _device.OnlineStatusChange += (d, args) => 
+                    Debug.Console(0, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
+
                 UpdateFeedbacksWhenOnline();
             });
-            
-            AddPostActivationAction(() => RegisterCrestronGenericBase(_device));
         }
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
@@ -114,8 +118,6 @@ namespace PDT.Plugins.Crestron.IO
             TemperatureFeedback.FireUpdate();
             TemperatureInCFeedback.FireUpdate();
             HumidityFeedback.FireUpdate();
-            
-            Debug.Console(0, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
         }
 
         #region PreActivation
