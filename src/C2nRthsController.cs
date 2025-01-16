@@ -18,7 +18,6 @@ namespace PDT.Plugins.Crestron.IO
         private C2nRths _device;
 
         public IntFeedback TemperatureFeedback { get; private set; }
-
         public BoolFeedback TemperatureInCFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
@@ -30,17 +29,22 @@ namespace PDT.Plugins.Crestron.IO
             AddPreActivationAction(() =>
             {
                 _device = preActivationFunc(config);
-
-                RegisterCrestronGenericBase(_device);
-
+                if (_device == null)
+                {
+                    Debug.Console(0, this, "ERROR: Unable to create C2nRths Device");
+                    return;
+                }
+                
                 TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
                 TemperatureInCFeedback = new BoolFeedback(() => _device.TemperatureFormat.BoolValue);
                 HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
-
-                if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
+                
+                _device.BaseEvent          += DeviceOnBaseEvent;
+                _device.OnlineStatusChange += (o, args) => UpdateFeedbacksWhenOnline();
+                
+                RegisterCrestronGenericBase(_device);
             });
         }
-
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
         {
