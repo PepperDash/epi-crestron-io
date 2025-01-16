@@ -21,11 +21,9 @@ namespace PDT.Plugins.Crestron.IO
         public BoolFeedback TemperatureInCFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
-        public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc,
-            DeviceConfig config)
+        public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc, DeviceConfig config)
             : base(key, config.Name)
         {
-
             AddPreActivationAction(() =>
             {
                 _device = preActivationFunc(config);
@@ -42,8 +40,10 @@ namespace PDT.Plugins.Crestron.IO
                 _device.BaseEvent          += DeviceOnBaseEvent;
                 _device.OnlineStatusChange += (o, args) => UpdateFeedbacksWhenOnline();
                 
-                RegisterCrestronGenericBase(_device);
+                UpdateFeedbacksWhenOnline();
             });
+            
+            AddPostActivationAction(() => RegisterCrestronGenericBase(_device));
         }
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
@@ -112,7 +112,10 @@ namespace PDT.Plugins.Crestron.IO
         {
             IsOnline.FireUpdate();
             TemperatureFeedback.FireUpdate();
+            TemperatureInCFeedback.FireUpdate();
             HumidityFeedback.FireUpdate();
+            
+            Debug.Console(0, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
         }
 
         #region PreActivation
