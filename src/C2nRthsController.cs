@@ -32,7 +32,7 @@ namespace PDT.Plugins.Crestron.IO
                 _ => Feedbacks.ToList().ForEach(f => f.FireUpdate()), 
                 this,
                 TimeSpan.FromSeconds(30).Milliseconds, 
-                TimeSpan.FromSeconds(30).Milliseconds);
+                TimeSpan.FromMinutes(5).Milliseconds);
             
             AddPreActivationAction(() =>
             {
