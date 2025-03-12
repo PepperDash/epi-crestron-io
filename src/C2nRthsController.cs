@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
@@ -8,36 +10,52 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-
+using PepperDash.Essentials.Core.DeviceTypeInterfaces;
+using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PDT.Plugins.Crestron.IO
 {
     [Description("Wrapper class for the C2N-RTHS sensor")]
-    public class C2nRthsController : CrestronGenericBridgeableBaseDevice
+    public class C2nRthsController : CrestronGenericBridgeableBaseDevice, ITemperatureSensor, IHumiditySensor
     {
         private C2nRths _device;
-
+        private readonly CTimer _pollTimer;
+        
         public IntFeedback TemperatureFeedback { get; private set; }
+        public BoolFeedback TemperatureInCFeedback { get; private set; }
         public IntFeedback HumidityFeedback { get; private set; }
 
-        public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc,
-            DeviceConfig config)
+        public C2nRthsController(string key, Func<DeviceConfig, C2nRths> preActivationFunc, DeviceConfig config)
             : base(key, config.Name)
         {
-
+            _pollTimer = new CTimer(
+                _ => Feedbacks.ToList().ForEach(f => f.FireUpdate()), 
+                this,
+                TimeSpan.FromSeconds(30).Milliseconds, 
+                TimeSpan.FromMinutes(5).Milliseconds);
+            
             AddPreActivationAction(() =>
             {
                 _device = preActivationFunc(config);
+                if (_device == null)
+                {
+                    Debug.Console(0, this, "ERROR: Unable to create C2nRths Device");
+                    return;
+                }
 
                 RegisterCrestronGenericBase(_device);
-
+                    
                 TemperatureFeedback = new IntFeedback(() => _device.TemperatureFeedback.UShortValue);
+                TemperatureInCFeedback = new BoolFeedback(() => _device.TemperatureFormat.BoolValue);
                 HumidityFeedback = new IntFeedback(() => _device.HumidityFeedback.UShortValue);
-
-                if (_device != null) _device.BaseEvent += DeviceOnBaseEvent;
+                
+                Feedbacks.AddRange(new List<Feedback> { TemperatureFeedback, TemperatureInCFeedback, HumidityFeedback });
+                _device.BaseEvent += DeviceOnBaseEvent;
+                
+                _device.OnlineStatusChange += (d, args) => 
+                    Debug.Console(1, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
             });
         }
-
 
         private void DeviceOnBaseEvent(GenericBase device, BaseEventArgs args)
         {
@@ -45,6 +63,7 @@ namespace PDT.Plugins.Crestron.IO
             {
                 case C2nRths.TemperatureFeedbackEventId:
                     TemperatureFeedback.FireUpdate();
+                    TemperatureInCFeedback.FireUpdate();
                     break;
                 case C2nRths.HumidityFeedbackEventId:
                     HumidityFeedback.FireUpdate();
@@ -55,6 +74,8 @@ namespace PDT.Plugins.Crestron.IO
         public void SetTemperatureFormat(bool setToC)
         {
             _device.TemperatureFormat.BoolValue = setToC;
+
+            TemperatureInCFeedback.FireUpdate();
         }
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
@@ -102,6 +123,7 @@ namespace PDT.Plugins.Crestron.IO
         {
             IsOnline.FireUpdate();
             TemperatureFeedback.FireUpdate();
+            TemperatureInCFeedback.FireUpdate();
             HumidityFeedback.FireUpdate();
         }
 
