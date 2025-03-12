@@ -1,30 +1,32 @@
 <Project>
-    <ItemGroup>
-        <None Include="$(TargetDir)\$(TargetName).$(Version).cpz" Condition="$(ProjectType) == 'Program'">
-            <Pack>true</Pack>
-            <PackagePath>content;</PackagePath>
-        </None>
-        <None Include="$(PackageOutputPath)\$(TargetName).$(Version).cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
-            <Pack>true</Pack>
-            <PackagePath>content;</PackagePath>
-        </None>
-    </ItemGroup>
-    <Target Name="Create CPLZ" AfterTargets="Build; Rebuild" Condition="$(ProjectType) == 'ProgramLibrary'">
-        <Message Text="Creating CPLZ"></Message>
-        <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))"></MakeDir>
-        <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(TargetName).$(Version).cplz" Overwrite="true"/>
-    </Target>
-    <Target Name="Clean CPLZ" AfterTargets="AfterClean" Condition="$(ProjectType) == 'ProgramLibrary'">
-        <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).cplz"/>
-    </Target>
-    <Target Name="Copy CPZ" AfterTargets="SimplSharpPostProcess" Condition="$(ProjectType) == 'Program'">
-        <Message Text="Copying CPZ"></Message>
-        <Move SourceFiles="$(TargetDir)\$(TargetName).cpz" DestinationFiles="$(TargetDir)\$(TargetName).$(Version).cpz"/>
-        <Copy SourceFiles="$(TargetDir)\$(TargetName).$(Version).cpz" DestinationFiles="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
-    </Target>
-    <Target Name="Clean CPZ" AfterTargets="AfterClean" Condition="$(ProjectType) == 'Program'">
-        <Delete Files="$(PackageOutputPath)\$(TargetName).$(Version).cpz"/>
-    </Target>
+  <ItemGroup>
+    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz" Condition="$(ProjectType) == 'Program'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
+    <None Include="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz" Condition="$(ProjectType) == 'ProgramLibrary'">
+      <Pack>true</Pack>
+      <PackagePath>build;</PackagePath>
+    </None>
+  </ItemGroup>
+  <PropertyGroup Condition="$(ProjectType) == 'ProgramLibrary'">
+    <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz</FileName>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(ProjectType) == 'Program'">
+    <FileName>$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cpz</FileName>
+  </PropertyGroup>
+  <Target Name="DeleteCPLZ" BeforeTargets="PreBuildEvent" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != '' And Exists($(FileName))">
+    <Delete Files="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz">
+      <Output TaskParameter="DeletedFiles" ItemName="DeletedList"/>
+    </Delete>
+    <Message Text="Deleted files: '@(DeletedList)'" />
+  </Target>
+  <Target Name="CreateCPLZ" AfterTargets="Build" Condition="$(ProjectType) == 'ProgramLibrary' And $(TargetDir) != ''" DependsOnTargets="DeleteCPLZ">
+    <Message Text="Creating CPLZ $(TargetDir)"></Message>
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists($(PackageOutputPath))" />    
+    <ZipDirectory SourceDirectory="$(TargetDir)" DestinationFile="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cplz" Overwrite="true"/>
+    <Copy SourceFiles="$(PackageOutputPath)\$(TargetName).$(Version).$(TargetFramework).cplz" DestinationFiles="$(TargetDir)$(TargetName).$(Version).$(TargetFramework).cplz" />
+  </Target>
     <Target Name="SimplSharpNewtonsoft" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
         <ItemGroup>
             <ReferencePath Condition="'%(FileName)' == 'Newtonsoft.Json.Compact'">
