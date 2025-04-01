@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectType>ProgramLibrary</ProjectType>
   </PropertyGroup>
@@ -37,7 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PepperDashEssentials" Version="2.0.0-alpha-2567" />
+	  <PackageReference Include="PepperDashEssentials" Version="2.1.0" >
+		  <ExcludeAssets>runtime</ExcludeAssets>
+	  </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
