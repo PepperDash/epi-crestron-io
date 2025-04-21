@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core;
+using static PDT.Plugins.Crestron.IO.CenRfgwController;
 
 
 namespace PDT.Plugins.Crestron.IO
@@ -10,6 +12,7 @@ namespace PDT.Plugins.Crestron.IO
         public EssentialsControlPropertiesConfig Control { get; set; }
 
         [JsonProperty("gatewayType")]
-        public string GatewayType { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public EExGatewayType GatewayType { get; set; }
      }
 }

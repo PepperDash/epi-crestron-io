@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Gateways;
-using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -54,21 +53,38 @@ namespace PDT.Plugins.Crestron.IO
             });
         }
 
-        public static GatewayBase GetNewIpRfGateway(DeviceConfig dc)
+        public static GatewayBase GetIpRfGateway(DeviceConfig dc, bool shareable)
         {
             var control = CommFactory.GetControlPropertiesConfig(dc);
             var type = dc.Type;
             var ipId = control.IpIdInt;
 
-            if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
+            switch (dc.Type.ToLower())
             {
-                return new CenRfgwEx(ipId, Global.ControlSystem);
+                case "cengwexer":
+                    {
+                        if (shareable)
+                            return new CenGwExErEthernetSharable(ipId, Global.ControlSystem);
+
+                        return new CenGwExEr(ipId, Global.ControlSystem);
+                    }
+                case "cenerfgwpoe":
+                    {
+                        if (shareable)
+                            return new CenErfgwPoeEthernetSharable(ipId, Global.ControlSystem);
+
+                        return new CenErfgwPoe(ipId, Global.ControlSystem);
+                    }
+                case "cenrfgwex":
+                    {
+                        if(shareable)
+                            return new CenRfgwExEthernetSharable(ipId, Global.ControlSystem);
+                        return new CenRfgwEx(ipId, Global.ControlSystem);
+                    }
+                default:
+                    Debug.LogWarning("Device {device} is not a valid shared ethernet gateway", dc.Type);
+                    return null;
             }
-            if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenErfgwPoe(ipId, Global.ControlSystem);
-            }
-            return null;
         }
 
         private void FireIsReadyEvent(bool data)
@@ -78,22 +94,6 @@ namespace PDT.Plugins.Crestron.IO
 
             handler(this, new IsReadyEventArgs(data));
 
-        }
-
-        public static GatewayBase GetNewSharedIpRfGateway(DeviceConfig dc)
-        {
-            var control = CommFactory.GetControlPropertiesConfig(dc);
-            var ipId = control.IpIdInt;
-
-            if (dc.Type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenRfgwExEthernetSharable(ipId, Global.ControlSystem);
-            }
-            if (dc.Type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenErfgwPoeEthernetSharable(ipId, Global.ControlSystem);
-            }
-            return null;
         }
 
         public static GatewayBase GetCenRfgwCresnetController(DeviceConfig dc)
@@ -106,7 +106,8 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
+                Debug.LogDebug("Device {parent} is a valid cresnet master - creating new CenRfgw");
+
                 if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new CenErfgwPoeCresnet(cresnetId, Global.ControlSystem);
@@ -116,11 +117,10 @@ namespace PDT.Plugins.Crestron.IO
                     return new CenRfgwExCresnet(cresnetId, Global.ControlSystem);
                 }
             }
-            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
 
-            if (cresnetBridge != null)
+            if (DeviceManager.GetDeviceForKey(parentKey) is ICresnetBridge cresnetBridge)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
+                Debug.LogDebug("Device {parent} is a valid cresnet master - creating new CenRfgw", parentKey);
 
                 if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -131,7 +131,8 @@ namespace PDT.Plugins.Crestron.IO
                     return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[(uint)branchId]);
                 }
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+
+            Debug.LogWarning("Device {parent} is not a valid cresnet master", parentKey);
             return null;
         }
 
@@ -151,26 +152,21 @@ namespace PDT.Plugins.Crestron.IO
             {
                 MinimumEssentialsFrameworkVersion = "2.0.0";
 
-
-                TypeNames = new List<string> {"cenrfgwex", "cenerfgwpoe"};
+                TypeNames = new List<string> {"cenrfgwex", "cenerfgwpoe", "cengwexer"};
             }
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
 
-                Debug.Console(1, "Factory Attempting to create new CEN-GWEXER Device");
+                Debug.LogDebug("Factory Attempting to create new RF Gateway Device");
 
-                var props = JsonConvert.DeserializeObject<EssentialsRfGatewayConfig>(dc.Properties.ToString());
+                var props = dc.Properties.ToObject<EssentialsRfGatewayConfig>();                
 
-                EExGatewayType gatewayType =
-                    (EExGatewayType) Enum.Parse(typeof (EExGatewayType), props.GatewayType, true);
-
-                switch (gatewayType)
+                switch (props.GatewayType)
                 {
-                    case (EExGatewayType.Ethernet):
-                        return new CenRfgwController(dc.Key, dc.Name, GetNewIpRfGateway(dc));
+                    case (EExGatewayType.Ethernet):                        
                     case (EExGatewayType.EthernetShared):
-                        return new CenRfgwController(dc.Key, dc.Name, GetNewSharedIpRfGateway(dc));
+                        return new CenRfgwController(dc.Key, dc.Name, GetIpRfGateway(dc, props.GatewayType == EExGatewayType.EthernetShared));
                     case (EExGatewayType.Cresnet):
                         return new CenRfgwController(dc.Key, GetCenRfgwCresnetController, dc);
                 }
