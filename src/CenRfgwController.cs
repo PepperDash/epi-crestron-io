@@ -59,7 +59,7 @@ namespace PDT.Plugins.Crestron.IO
             var type = dc.Type;
             var ipId = control.IpIdInt;
 
-            switch (dc.Type.ToLower())
+            switch (dc.Type.ToLowerInvariant())
             {
                 case "cengwexer":
                     {
