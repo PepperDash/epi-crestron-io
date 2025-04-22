@@ -1,91 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Crestron.SimplSharpPro;
+﻿using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Remotes;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
 namespace PDT.Plugins.Crestron.IO
 {
     [Description("Wrapper class for all HR-Series remotes")]
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback, IHR52Button
-    {
-        private readonly CenRfgwController _gateway;
+    {        
+        private Hr1x0WirelessRemoteBase _remote;        
 
-        private Hr1x0WirelessRemoteBase _remote;
+        public FeedbackCollection<Feedback> Feedbacks { get; } = new FeedbackCollection<Feedback>();
 
-        public FeedbackCollection<Feedback> Feedbacks { get; set; }
+        public CrestronCollection<Button> Buttons => _remote.Button;
 
-        public CrestronCollection<Button> Buttons { get { return _remote.Button; } }
+        private readonly CrestronRemotePropertiesConfig props;
 
-        private readonly DeviceConfig _config;
-
-        public Hrxx0WirelessRemoteController(string key, Func<DeviceConfig, Hr1x0WirelessRemoteBase> preActivationFunc, 
+        public Hrxx0WirelessRemoteController(string key, string name, Func<string, CrestronRemotePropertiesConfig, Hr1x0WirelessRemoteBase> postActivationFunc, 
             DeviceConfig config)
-            : base(key, config.Name)
-        {
-            Feedbacks = new FeedbackCollection<Feedback>();
-
-            var props = JsonConvert.DeserializeObject<CrestronRemotePropertiesConfig>(config.Properties.ToString());
-
-            _config = config;
+            : base(key, name)
+        {           
+            props = config.Properties.ToObject<CrestronRemotePropertiesConfig>();
             
-            if (props.GatewayDeviceKey == "processor")
+            AddPostActivationAction(() =>
             {
-                {
-                    AddPreActivationAction(() =>
-                    {
-                        _remote = preActivationFunc(config);
-                        RegisterEvents();
-                    });
+                _remote = postActivationFunc(config.Type, props);                
 
-                    return;
+                RegisterEvents();
+
+                if (_remote != null && _remote.Registerable)
+                {
+                    _remote.RegisterWithLogging(Key);
                 }
-            }
+            });            
+        }        
 
-
-            var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
-            if (gatewayDev == null)
-            {
-                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
-            }
-            if (gatewayDev != null)
-            {
-                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
-                _gateway = gatewayDev;
-            }
-
-
-            if (_gateway == null) return;
-
-            _gateway.IsReadyEvent += _gateway_IsReadyEvent;
-            if (_gateway.IsReady)
-            {
-                AddPreActivationAction(() =>
-                {
-                    _remote = preActivationFunc(config);
-
-                    RegisterEvents();
-                });
-            }
-        }
-
-        void _gateway_IsReadyEvent(object sender, IsReadyEventArgs e)
+        void Remote_BaseEvent(GenericBase device, BaseEventArgs args)
         {
-            if (e.IsReady != true) return;
-            _remote = GetHr1x0WirelessRemote(_config);
+            this.LogVerbose("Base Event: {id}", args.EventId);
 
-            RegisterEvents();
-        }
-
-        void _remote_BaseEvent(GenericBase device, BaseEventArgs args)
-        {
             if(args.EventId == Hr1x0EventIds.BatteryCriticalFeedbackEventId)
                 Feedbacks["BatteryCritical"].FireUpdate();
             if(args.EventId == Hr1x0EventIds.BatteryLowFeedbackEventId)
@@ -96,129 +58,47 @@ namespace PDT.Plugins.Crestron.IO
 
         private void RegisterEvents()
         {
-            _remote.ButtonStateChange += _remote_ButtonStateChange;
+            _remote.ButtonStateChange += Remote_ButtonStateChange;
+            _remote.BaseEvent += Remote_BaseEvent;
+            _remote.OnlineStatusChange += (d, a) => this.LogInformation("Remote Online Status: {status}", a.DeviceOnLine ? "Online" : "Offline");
 
             Feedbacks.Add(new BoolFeedback("BatteryCritical", () => _remote.BatteryCriticalFeedback.BoolValue));
             Feedbacks.Add(new BoolFeedback("BatteryLow", () => _remote.BatteryLowFeedback.BoolValue));
             Feedbacks.Add(new IntFeedback("BatteryVoltage", () => _remote.BatteryVoltageFeedback.UShortValue));
-
-            _remote.BaseEvent += _remote_BaseEvent;
         }
 
-        void _remote_ButtonStateChange(GenericBase device, ButtonEventArgs args)
+        void Remote_ButtonStateChange(GenericBase device, ButtonEventArgs args)
         {
+            this.LogVerbose("button pressed: {buttonName}", args.Button.Name);
+            
             try
             {
+                // firing the Crestron defined event again here to allow for consuming devices to handle something directly
+                ButtonStateChange?.Invoke(device, args);
+
+                // firing the Essentials defined event to allow for consuming devices to handle something directly
+                EssentialsButtonStateChange?.Invoke(this, args);                
+
+                // checking if there's a delegate of some sort stored in the UserObject property on the Button Sig
                 var handler = args.Button.UserObject;
 
-                if (handler == null) return;
-
-                Debug.Console(1, this, "Executing Action: {0}", handler.ToString());
-
-                if (handler is Action<bool>)
-                {
-                    (handler as Action<bool>)(args.Button.State == eButtonState.Pressed ? true : false);
+                if (handler == null) {
+                    this.LogDebug("No handler for button {buttonId}", args.Button.Name);
+                    return;
                 }
 
-                var newHandler = ButtonStateChange;
-                if (ButtonStateChange != null)
-                {
-                    newHandler(device, args);
-                }
+                this.LogDebug("Executing Action for button {buttonId}", args.Button.Name);
 
-                var newerHandler = EssentialsButtonStateChange;
-                if (EssentialsButtonStateChange != null)
+                if (handler is Action<bool> action)
                 {
-                    newerHandler(this, args);
+                    action(args.Button.State == eButtonState.Pressed);
                 }
-
             }
             catch (Exception e)
             {
-                Debug.Console(2, this, "Error in ButtonStateChange handler: {0}", e);
+                this.LogError(e, "Error in ButtonStateChange handler");
             }
         }
-
-
-        #region Preactivation
-
-        private static Hr1x0WirelessRemoteBase GetHr1x0WirelessRemote(DeviceConfig config)
-        {
-            var props = JsonConvert.DeserializeObject<CrestronRemotePropertiesConfig>(config.Properties.ToString());
-
-            var type = config.Type;
-            var rfId = (uint)props.Control.InfinetIdInt;
-
-            GatewayBase gateway;
-
-            if (props.GatewayDeviceKey == "processor")
-            {
-                gateway = Global.ControlSystem.ControllerRFGatewayDevice;
-            }
-            else
-            {
-                var gatewayDev = DeviceManager.GetDeviceForKey(props.GatewayDeviceKey) as CenRfgwController;
-                if (gatewayDev == null)
-                {
-                    Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid device", props.GatewayDeviceKey);
-                    return null;
-                }
-                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is a valid device", props.GatewayDeviceKey);
-                gateway = gatewayDev.GateWay; 
-            }
-
-            if (gateway == null)
-            {
-                Debug.Console(0, "GetHr1x0WirelessRemote: Device '{0}' is not a valid gateway", props.GatewayDeviceKey);
-                return null;
-            }
-
-            Hr1x0WirelessRemoteBase remoteBase;
-            switch (type)
-            {
-                case ("hr100"):
-                    remoteBase = new Hr100(rfId, gateway);
-                    break;
-                case ("hr150"):
-                    remoteBase = new Hr150(rfId, gateway);
-                    break;
-                case ("hr310"):
-                    remoteBase = new Hr310(rfId, gateway);
-                    break;
-                default:
-                    return null;
-            }
-
-            // register the device when using an internal RF gateway
-            if (props.GatewayDeviceKey == "processor")
-            {
-                remoteBase.RegisterWithLogging(config.Key);
-            }
-
-            return remoteBase;            
-        }
-
-        #endregion
-
-        #region Factory
-        public class Hrxx0WirelessRemoteControllerFactory : EssentialsPluginDeviceFactory<Hrxx0WirelessRemoteController>
-        {
-            public Hrxx0WirelessRemoteControllerFactory()
-            {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
-
-
-                TypeNames = new List<string>() { "hr100", "hr150", "hr310" };
-            }
-
-            public override EssentialsDevice BuildDevice(DeviceConfig dc)
-            {
-                Debug.Console(1, "Factory Attempting to create new HR-x00 Remote Device");
-
-                return new Hrxx0WirelessRemoteController(dc.Key, GetHr1x0WirelessRemote, dc);
-            }
-        }
-        #endregion
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -320,8 +200,6 @@ namespace PDT.Plugins.Crestron.IO
             trilist.BooleanInput[join].BoolValue = b;
         }
 
-
-
         #region IHR52Button Members
 
         public Button Custom9
@@ -329,7 +207,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR52Button) _remote;
-                return localRemote == null ? null : localRemote.Custom9;
+                return localRemote?.Custom9;
             }
         }
 
@@ -338,7 +216,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR52Button)_remote;
-                return localRemote == null ? null : localRemote.Favorite;
+                return localRemote?.Favorite;
             }
         }
         
@@ -348,7 +226,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR52Button)_remote;
-                return localRemote == null ? null : localRemote.Home;
+                return localRemote?.Home;
             }
         }
 
@@ -361,7 +239,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Clear;
+                return localRemote?.Clear;
             }
         }
 
@@ -370,7 +248,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Custom5;
+                return localRemote?.Custom5;
             }
         }
 
@@ -379,7 +257,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Custom6;
+                return localRemote?.Custom6;
             }
         }
 
@@ -388,7 +266,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Custom7;
+                return localRemote?.Custom7;
             }
         }
 
@@ -397,7 +275,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Custom8;
+                return localRemote?.Custom8;
             }
         }
 
@@ -406,7 +284,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Enter;
+                return localRemote?.Enter;
             }
         }
 
@@ -415,7 +293,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad0;
+                return localRemote?.Keypad0;
             }
         }
 
@@ -424,7 +302,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad1;
+                return localRemote?.Keypad1;
             }
         }
 
@@ -433,7 +311,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad2Abc;
+                return localRemote?.Keypad2Abc;
             }
         }
 
@@ -442,7 +320,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad3Def;
+                return localRemote?.Keypad3Def;
             }
         }
 
@@ -451,7 +329,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad4Ghi;
+                return localRemote?.Keypad4Ghi;
             }
         }
 
@@ -460,7 +338,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad5Jkl;
+                return localRemote?.Keypad5Jkl;
             }
         }
 
@@ -469,7 +347,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad6Mno;
+                return localRemote?.Keypad6Mno;
             }
         }
 
@@ -478,7 +356,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad7Pqrs;
+                return localRemote?.Keypad7Pqrs;
             }
         }
 
@@ -487,7 +365,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad8Tuv;
+                return localRemote?.Keypad8Tuv;
             }
         }
 
@@ -496,7 +374,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR49Button)_remote;
-                return localRemote == null ? null : localRemote.Keypad9Wxyz;
+                return localRemote?.Keypad9Wxyz;
             }
         }
 
@@ -509,7 +387,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Blue;
+                return localRemote?.Blue;
             }
         }
 
@@ -518,7 +396,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.ChannelDown;
+                return localRemote?.ChannelDown;
             }
         }
 
@@ -527,7 +405,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.ChannelUp;
+                return localRemote?.ChannelUp;
             }
         }
 
@@ -536,7 +414,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Custom1;
+                return localRemote?.Custom1;
             }
         }
 
@@ -545,7 +423,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Custom2;
+                return localRemote?.Custom2;
             }
         }
 
@@ -554,7 +432,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Custom3;
+                return localRemote?.Custom3;
             }
         }
 
@@ -563,7 +441,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Custom4;
+                return localRemote?.Custom4;
             }
         }
 
@@ -572,7 +450,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.DialPadDown;
+                return localRemote?.DialPadDown;
             }
         }
 
@@ -581,7 +459,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.DialPadEnter;
+                return localRemote?.DialPadEnter;
             }
         }
 
@@ -590,7 +468,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.DialPadLeft;
+                return localRemote?.DialPadLeft;
             }
         }
 
@@ -599,7 +477,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.DialPadRight;
+                return localRemote?.DialPadRight;
             }
         }
 
@@ -608,7 +486,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.DialPadUp;
+                return localRemote?.DialPadUp;
             }
         }
 
@@ -617,7 +495,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Dvr;
+                return localRemote?.Dvr;
             }
         }
 
@@ -626,7 +504,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Exit;
+                return localRemote?.Exit;
             }
         }
 
@@ -635,7 +513,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.FastForward;
+                return localRemote?.FastForward;
             }
         }
 
@@ -644,7 +522,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Green;
+                return localRemote?.Green;
             }
         }
 
@@ -653,7 +531,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Blue;
+                return localRemote?.Blue;
             }
         }
 
@@ -662,7 +540,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Information;
+                return localRemote?.Information;
             }
         }
 
@@ -671,7 +549,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Last;
+                return localRemote?.Last;
             }
         }
 
@@ -680,7 +558,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Menu;
+                return localRemote?.Menu;
             }
         }
 
@@ -689,7 +567,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Mute;
+                return localRemote?.Mute;
             }
         }
 
@@ -698,7 +576,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.NextTrack;
+                return localRemote?.NextTrack;
             }
         }
 
@@ -707,7 +585,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Pause;
+                return localRemote?.Pause;
             }
         }
 
@@ -716,7 +594,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Play;
+                return localRemote?.Play;
             }
         }
 
@@ -725,7 +603,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Power;
+                return localRemote?.Power;
             }
         }
 
@@ -734,7 +612,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.PreviousTrack;
+                return localRemote?.PreviousTrack;
             }
         }
 
@@ -743,7 +621,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Record;
+                return localRemote?.Record;
             }
         }
 
@@ -752,7 +630,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Red;
+                return localRemote?.Red;
             }
         }
 
@@ -761,7 +639,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Rewind;
+                return localRemote?.Rewind;
             }
         }
 
@@ -770,7 +648,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Stop;
+                return localRemote?.Stop;
             }
         }
 
@@ -779,7 +657,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.VolumeDown;
+                return localRemote?.VolumeDown;
             }
         }
 
@@ -788,7 +666,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.VolumeUp;
+                return localRemote?.VolumeUp;
             }
         }
 
@@ -797,7 +675,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote == null ? null : localRemote.Yellow;
+                return localRemote?.Yellow;
             }
         }
 
@@ -817,5 +695,64 @@ namespace PDT.Plugins.Crestron.IO
         public event EssentialsButtonEventHandler EssentialsButtonStateChange;
 
         #endregion
+    }
+
+    public class Hrxx0WirelessRemoteControllerFactory : EssentialsPluginDeviceFactory<Hrxx0WirelessRemoteController>
+    {
+        public Hrxx0WirelessRemoteControllerFactory()
+        {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+            TypeNames = new List<string>() { "hr100", "hr150", "hr310" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.LogDebug("Factory Attempting to create new HR-x00 Remote Device");
+
+            return new Hrxx0WirelessRemoteController(dc.Key, dc.Name, GetHr1x0WirelessRemote, dc);
+        }
+
+        private Hr1x0WirelessRemoteBase GetHr1x0WirelessRemote(string type, CrestronRemotePropertiesConfig config)
+        {         
+            var rfId = config.Control.InfinetIdInt;
+
+            GatewayBase gateway;
+
+            if (config.GatewayDeviceKey == "processor")
+            {
+                gateway = Global.ControlSystem.ControllerRFGatewayDevice;
+            }
+            else
+            {
+                if (!(DeviceManager.GetDeviceForKey(config.GatewayDeviceKey) is CenRfgwController gatewayDev))
+                {
+                    Debug.LogWarning("GetHr1x0WirelessRemote: Device '{gatewayDeviceKey}' is not a valid device", config.GatewayDeviceKey);
+                    return null;
+                }
+
+                Debug.LogWarning("GetHr1x0WirelessRemote: Device '{gatewayDeviceKey}' is a valid device", config.GatewayDeviceKey);
+
+                gateway = gatewayDev.GateWay;
+            }
+
+            if (gateway == null)
+            {
+                Debug.LogWarning("GetHr1x0WirelessRemote: Device '{gatewayDeviceKey}' is not a valid gateway", config.GatewayDeviceKey);
+                return null;
+            }
+           
+            switch (type)
+            {
+                case ("hr100"):                    
+                    return new Hr100(rfId, gateway);
+                case ("hr150"):
+                    return new Hr150(rfId, gateway);                    
+                case ("hr310"):
+                    return new Hr310(rfId, gateway);                    
+                default:
+                    return null;
+            }
+        }
     }
 }
