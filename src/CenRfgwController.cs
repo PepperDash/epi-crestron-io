@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.Gateways;
-using Newtonsoft.Json;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
@@ -11,12 +10,8 @@ using PepperDash.Essentials.Core.Config;
 namespace PDT.Plugins.Crestron.IO
 {
     [Description("Wrapper class for Crestron Infinet-EX Gateways")]
-    public class CenRfgwController : CrestronGenericBaseDevice, IHasReady
+    public class CenRfgwController : CrestronGenericBaseDevice
     {
-        public event EventHandler<IsReadyEventArgs> IsReadyEvent;
-
-        public bool IsReady { get; private set; }
-
         private GatewayBase _gateway;
 
         public GatewayBase GateWay
@@ -33,155 +28,140 @@ namespace PDT.Plugins.Crestron.IO
         public CenRfgwController(string key, string name, GatewayBase gateway) :
             base(key, name, gateway)
         {
-            _gateway = gateway;
-            IsReady = true;
-            FireIsReadyEvent(IsReady);
+            _gateway = gateway;            
         }
 
-        public CenRfgwController(string key, Func<DeviceConfig, GatewayBase> preActivationFunc, DeviceConfig config) :
-            base(key, config.Name)
+        public CenRfgwController(string key, string name, Func<string, EssentialsRfGatewayConfig, GatewayBase> preActivationFunc, DeviceConfig config) :
+            base(key, name)
         {
-            IsReady = false;
-            FireIsReadyEvent(IsReady);
+            var props = config.Properties.ToObject<EssentialsRfGatewayConfig>();
+
             AddPreActivationAction(() =>
             {
-                _gateway = preActivationFunc(config);
-
-                IsReady = true;
-                RegisterCrestronGenericBase(_gateway);
-                FireIsReadyEvent(IsReady);
-
+                _gateway = preActivationFunc(config.Type, props);
+                
+                RegisterCrestronGenericBase(_gateway);                
             });
         }
-
-        public static GatewayBase GetNewIpRfGateway(DeviceConfig dc)
-        {
-            var control = CommFactory.GetControlPropertiesConfig(dc);
-            var type = dc.Type;
-            var ipId = control.IpIdInt;
-
-            if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenRfgwEx(ipId, Global.ControlSystem);
-            }
-            if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenErfgwPoe(ipId, Global.ControlSystem);
-            }
-            return null;
-        }
-
-        private void FireIsReadyEvent(bool data)
-        {
-            var handler = IsReadyEvent;
-            if (handler == null) return;
-
-            handler(this, new IsReadyEventArgs(data));
-
-        }
-
-        public static GatewayBase GetNewSharedIpRfGateway(DeviceConfig dc)
-        {
-            var control = CommFactory.GetControlPropertiesConfig(dc);
-            var ipId = control.IpIdInt;
-
-            if (dc.Type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenRfgwExEthernetSharable(ipId, Global.ControlSystem);
-            }
-            if (dc.Type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return new CenErfgwPoeEthernetSharable(ipId, Global.ControlSystem);
-            }
-            return null;
-        }
-
-        public static GatewayBase GetCenRfgwCresnetController(DeviceConfig dc)
-        {
-            var control = CommFactory.GetControlPropertiesConfig(dc);
-            var type = dc.Type;
-            var cresnetId = control.CresnetIdInt;
-            var branchId = control.ControlPortNumber;
-            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
-
-            if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
-            {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
-                if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return new CenErfgwPoeCresnet(cresnetId, Global.ControlSystem);
-                }
-                if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return new CenRfgwExCresnet(cresnetId, Global.ControlSystem);
-                }
-            }
-            var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as ICresnetBridge;
-
-            if (cresnetBridge != null)
-            {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new CenRfgw", parentKey);
-
-                if (type.Equals("cenerfgwpoe", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return new CenErfgwPoeCresnet(cresnetId, cresnetBridge.Branches[(uint)branchId]);
-                }
-                if (type.Equals("cenrfgwex", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[(uint)branchId]);
-                }
-            }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
-            return null;
-        }
-
-        public enum EExGatewayType
-        {
-            Ethernet,
-            EthernetShared,
-            Cresnet
-        }
-
-
-        #region Factory
-
-        public class CenRfgwControllerFactory : EssentialsPluginDeviceFactory<CenRfgwController>
-        {
-            public CenRfgwControllerFactory()
-            {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
-
-
-                TypeNames = new List<string> {"cenrfgwex", "cenerfgwpoe"};
-            }
-
-            public override EssentialsDevice BuildDevice(DeviceConfig dc)
-            {
-
-                Debug.Console(1, "Factory Attempting to create new CEN-GWEXER Device");
-
-                var props = JsonConvert.DeserializeObject<EssentialsRfGatewayConfig>(dc.Properties.ToString());
-
-                EExGatewayType gatewayType =
-                    (EExGatewayType) Enum.Parse(typeof (EExGatewayType), props.GatewayType, true);
-
-                switch (gatewayType)
-                {
-                    case (EExGatewayType.Ethernet):
-                        return new CenRfgwController(dc.Key, dc.Name, GetNewIpRfGateway(dc));
-                    case (EExGatewayType.EthernetShared):
-                        return new CenRfgwController(dc.Key, dc.Name, GetNewSharedIpRfGateway(dc));
-                    case (EExGatewayType.Cresnet):
-                        return new CenRfgwController(dc.Key, GetCenRfgwCresnetController, dc);
-                }
-                return null;
-            }
-        }
-
-        #endregion
     }
 
+    public enum EExGatewayType
+    {
+        Ethernet,
+        EthernetShared,
+        Cresnet
+    }
+
+
     
+
+    public class CenRfgwControllerFactory : EssentialsPluginDeviceFactory<CenRfgwController>
+    {
+        public CenRfgwControllerFactory()
+        {
+            MinimumEssentialsFrameworkVersion = "2.0.0";
+
+            TypeNames = new List<string> { "cenrfgwex", "cenerfgwpoe", "cengwexer", "internal" };
+        }
+
+        public override EssentialsDevice BuildDevice(DeviceConfig dc)
+        {
+            Debug.LogDebug("Factory Attempting to create new RF Gateway Device");
+
+            switch (dc.Type.ToLowerInvariant())
+            {
+                case "internal":
+                    if(!Global.ControlSystem.SupportsInternalRFGateway)
+                    { 
+                        Debug.LogError("Internal RF Gateway is not supported on this processor");
+                        return null;
+                    }
+                    return new CenRfgwController(dc.Key, dc.Name, Global.ControlSystem.ControllerRFGatewayDevice);
+                default:
+                    return new CenRfgwController(dc.Key, dc.Name, GetRfGatewayDevice, dc);
+            }            
+        }
+
+        private static GatewayBase GetRfGatewayDevice(string type, EssentialsRfGatewayConfig props)
+        {            
+            switch (props.GatewayType)
+            {
+                case (EExGatewayType.Ethernet):
+                case (EExGatewayType.EthernetShared):
+                    return BuildIpRfGateway(type, props.Control, props.GatewayType == EExGatewayType.EthernetShared);
+                case (EExGatewayType.Cresnet):
+                    return BuildCresnetRfGateway(type, props.Control);
+                default:
+                    return null;
+            }
+        }
+
+        private static GatewayBase BuildCresnetRfGateway(string type, EssentialsControlPropertiesConfig control)
+        {               
+            var cresnetId = control.CresnetIdInt;
+
+            var branchId = control.ControlPortNumber ?? 1; //assume 1 if ControlPortNumber is ommited;
+
+            var parentKey = string.IsNullOrEmpty(control.ControlPortDevKey) ? "processor" : control.ControlPortDevKey;
+
+            switch (type.ToLowerInvariant())
+            {
+                case "cenerfgwpoe":
+                    {                        
+                        if (DeviceManager.GetDeviceForKey(parentKey) is ICresnetBridge cresnetBridge)
+                        {
+                            return new CenErfgwPoeCresnet(cresnetId, cresnetBridge.Branches[branchId]);
+                        }
+
+                        return new CenErfgwPoeCresnet(cresnetId, Global.ControlSystem);                        
+                    }
+                case "cenrfgwex":
+                    {
+                        if (DeviceManager.GetDeviceForKey(parentKey) is ICresnetBridge cresnetBridge)
+                        {
+                            return new CenRfgwExCresnet(cresnetId, cresnetBridge.Branches[branchId]);
+                        }
+                        return new CenRfgwExCresnet(cresnetId, Global.ControlSystem);
+                    }
+                default:
+                    Debug.LogWarning("Device {device} is not a valid cresnet RF gateway type", type);
+                    return null;
+            }
+        }
+
+        private static GatewayBase BuildIpRfGateway(string type, EssentialsControlPropertiesConfig control, bool shareable)
+        {           
+            var ipId = control.IpIdInt;
+            
+            switch (type.ToLowerInvariant())
+            {
+                case "cengwexer":
+                    {
+                        if (shareable)
+                            return new CenGwExErEthernetSharable(ipId, Global.ControlSystem);
+
+                        return new CenGwExEr(ipId, Global.ControlSystem);
+                    }
+                case "cenerfgwpoe":
+                    {
+                        if (shareable)
+                            return new CenErfgwPoeEthernetSharable(ipId, Global.ControlSystem);
+
+                        return new CenErfgwPoe(ipId, Global.ControlSystem);
+                    }
+                case "cenrfgwex":
+                    {
+                        if (shareable)
+                            return new CenRfgwExEthernetSharable(ipId, Global.ControlSystem);
+                        return new CenRfgwEx(ipId, Global.ControlSystem);
+                    }
+                default:
+                    Debug.LogWarning("Device {device} is not a valid ethernet RF gateway", type);
+                    return null;
+            }
+        }
+    }
+
 }
 
 
