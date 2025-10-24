@@ -531,7 +531,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote?.Blue;
+                return localRemote?.Guide;
             }
         }
 
