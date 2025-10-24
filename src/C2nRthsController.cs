@@ -39,7 +39,7 @@ namespace PDT.Plugins.Crestron.IO
                 _device = preActivationFunc(config);
                 if (_device == null)
                 {
-                    Debug.Console(0, this, "ERROR: Unable to create C2nRths Device");
+                    Debug.LogInformation(this, "ERROR: Unable to create C2nRths Device");
                     return;
                 }
 
@@ -53,7 +53,7 @@ namespace PDT.Plugins.Crestron.IO
                 _device.BaseEvent += DeviceOnBaseEvent;
                 
                 _device.OnlineStatusChange += (d, args) => 
-                    Debug.Console(1, this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
+                    Debug.LogDebug(this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
             });
         }
 
@@ -93,10 +93,10 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
 
             trilist.SetBoolSigAction(joinMap.TemperatureFormat.JoinNumber, SetTemperatureFormat);
@@ -138,17 +138,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
                 return new C2nRths(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
                 return new C2nRths(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -165,7 +165,7 @@ namespace PDT.Plugins.Crestron.IO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new C2N-RTHS Device");
+                Debug.LogDebug("Factory Attempting to create new C2N-RTHS Device");
 
                 return new C2nRthsController(dc.Key, GetC2nRthsDevice, dc);
             }

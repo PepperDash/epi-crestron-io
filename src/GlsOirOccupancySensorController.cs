@@ -52,7 +52,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new GlsOirOccupancySensorController Device");
+            Debug.LogDebug("Factory Attempting to create new GlsOirOccupancySensorController Device");
 
             return new GlsOirOccupancySensorController(dc.Key, GetGlsOirCCn, dc);
         }
@@ -66,17 +66,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
 

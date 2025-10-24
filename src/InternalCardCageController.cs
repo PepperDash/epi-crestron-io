@@ -64,7 +64,7 @@ namespace PDT.Plugins.Crestron.IO
         {
             if (_config.Cards == null)
             {
-                Debug.Console(0, this, "No card configuration for this device found");
+                Debug.LogInformation(this, "No card configuration for this device found");
                 return;
             }
 
@@ -73,20 +73,20 @@ namespace PDT.Plugins.Crestron.IO
                 string cardType;
                 if (!_config.Cards.TryGetValue(i, out cardType))
                 {
-                    Debug.Console(0, this, "No card found for slot {0}", i);
+                    Debug.LogInformation(this, "No card found for slot {0}", i);
                     continue;
                 }
 
                 if (String.IsNullOrEmpty(cardType))
                 {
-                    Debug.Console(0, this, "No card specified for slot {0}", i);
+                    Debug.LogInformation(this, "No card specified for slot {0}", i);
                     continue;
                 }
 
                 Func<uint, C3CardControllerBase> cardBuilder;
                 if (!_cardDict.TryGetValue(cardType.ToLower(), out cardBuilder))
                 {
-                    Debug.Console(0, "Unable to find factory for 3-Series card type {0}.", cardType);
+                    Debug.LogInformation("Unable to find factory for 3-Series card type {0}.", cardType);
                     continue;
                 }
 
@@ -99,9 +99,9 @@ namespace PDT.Plugins.Crestron.IO
                 }
                 catch (InvalidOperationException ex)
                 {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Error,
-                        "Unable to add card {0} to internal card cage.\r\nError Message: {1}\r\nStack Trace: {2}",
-                        cardType, ex.Message, ex.StackTrace);
+                    Debug.LogError(ex,
+                        "Unable to add card {0} to internal card cage.",
+                        cardType);
                 }
             }
         }

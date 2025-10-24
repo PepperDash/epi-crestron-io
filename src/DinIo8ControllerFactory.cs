@@ -19,7 +19,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new DinIo8 Device");
+            Debug.LogDebug("Factory Attempting to create new DinIo8 Device");
 
             return new DinIo8Controller(dc.Key, GetDinIo8Device, dc);
         }
@@ -33,17 +33,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
                 return new DinIo8(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
                 return new DinIo8(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
     }

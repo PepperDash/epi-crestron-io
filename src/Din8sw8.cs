@@ -28,7 +28,7 @@ namespace PDT.Plugins.Crestron.IO
 
             if (SwitchModule.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
             {
-                Debug.Console(2, this, "Error registering Din8sw8. Reason: {0}", SwitchModule.RegistrationFailureReason);
+                Debug.LogVerbose(this, "Error registering Din8sw8. Reason: {0}", SwitchModule.RegistrationFailureReason);
             }
 
             PopulateDictionary();
@@ -58,7 +58,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new Din8sw8Controller Device");
+            Debug.LogDebug("Factory Attempting to create new Din8sw8Controller Device");
             var comm = CommFactory.GetControlPropertiesConfig(dc);
 
             return new Din8sw8Controller(dc.Key, comm.CresnetIdInt);

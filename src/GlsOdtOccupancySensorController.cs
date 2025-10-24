@@ -70,23 +70,23 @@ namespace PDT.Plugins.Crestron.IO
 
             if (PropertiesConfig.EnableUsA != null)
             {
-                Debug.Console(1, this, "EnableUsA found, attempting to set value from config");
+                Debug.LogDebug(this, "EnableUsA found, attempting to set value from config");
                 SetUsAEnable((bool)PropertiesConfig.EnableUsA);   
             }
             else
             {
-                Debug.Console(1, this, "EnableUsA null, no value specified in config");
+                Debug.LogDebug(this, "EnableUsA null, no value specified in config");
             }
 
 
             if (PropertiesConfig.EnableUsB != null)
             {
-                Debug.Console(1, this, "EnableUsB found, attempting to set value from config");
+                Debug.LogDebug(this, "EnableUsB found, attempting to set value from config");
                 SetUsBEnable((bool)PropertiesConfig.EnableUsB);
             }
             else
             {
-                Debug.Console(1, this, "EnablePir null, no value specified in config");
+                Debug.LogDebug(this, "EnablePir null, no value specified in config");
             }
 
 
@@ -226,11 +226,11 @@ namespace PDT.Plugins.Crestron.IO
 		{
             base.GetSettings();
 
-			Debug.Console(0, this, "Ultrasonic Enabled A: {0} | B: {1}",
+			Debug.LogInformation(this, "Ultrasonic Enabled A: {0} | B: {1}",
 				_occSensor.UsAEnabledFeedback.BoolValue,
 				_occSensor.UsBEnabledFeedback.BoolValue);
 
-			Debug.Console(0, this, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
+			Debug.LogInformation(this, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
 				_occSensor.UsSensitivityInOccupiedStateFeedback.UShortValue,
 				_occSensor.UsSensitivityInVacantStateFeedback.UShortValue);
 
@@ -253,7 +253,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new GlsOccupancySensorBaseController Device");
+            Debug.LogDebug("Factory Attempting to create new GlsOccupancySensorBaseController Device");
 
             return new GlsOdtOccupancySensorController(dc.Key, GetGlsOdtCCn, dc);
         }
@@ -267,17 +267,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
                 return new GlsOdtCCn(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
                 return new GlsOdtCCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
     }

@@ -94,7 +94,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.Console(1, this, "Error converting value to Red LED brightness. value: {0}", red);
+                Debug.LogDebug(this, "Error converting value to Red LED brightness. value: {0}", red);
             }
             try
             {
@@ -103,7 +103,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.Console(1, this, "Error converting value to Green LED brightness. value: {0}", green);
+                Debug.LogDebug(this, "Error converting value to Green LED brightness. value: {0}", green);
             }
 
             try
@@ -113,7 +113,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.Console(1, this, "Error converting value to Blue LED brightness. value: {0}", blue);
+                Debug.LogDebug(this, "Error converting value to Blue LED brightness. value: {0}", blue);
             }
         }
 
@@ -132,10 +132,10 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
             trilist.SetBoolSigAction(joinMap.RedControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
             trilist.SetBoolSigAction(joinMap.GreenControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
@@ -187,17 +187,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
                 return new StatusSign(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
                 return new StatusSign(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -214,7 +214,7 @@ namespace PDT.Plugins.Crestron.IO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new StatusSign Device");
+                Debug.LogDebug("Factory Attempting to create new StatusSign Device");
 
                 var control = CommFactory.GetControlPropertiesConfig(dc);
                 var cresnetId = control.CresnetIdInt;

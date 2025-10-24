@@ -72,7 +72,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
+                Debug.LogDebug(this, "props are null.  Unable to deserialize into GlsOccupancySensorPropertiesConfig");
             }
 
             AddPostActivationAction(() =>
@@ -99,32 +99,32 @@ namespace PDT.Plugins.Crestron.IO
         /// </summary>
         protected virtual void ApplySettingsToSensorFromConfig()
         {
-            Debug.Console(1, this, "Attempting to apply settings to sensor from config");
+            Debug.LogDebug(this, "Attempting to apply settings to sensor from config");
 
             if (PropertiesConfig.EnablePir != null)
             {
-                Debug.Console(1, this, "EnablePir found, attempting to set value from config");
+                Debug.LogDebug(this, "EnablePir found, attempting to set value from config");
                 SetPirEnable((bool)PropertiesConfig.EnablePir);
             }
             else
             {
-                Debug.Console(1, this, "EnablePir null, no value specified in config");
+                Debug.LogDebug(this, "EnablePir null, no value specified in config");
             }
 
             if (PropertiesConfig.EnableLedFlash != null)
             {
-                Debug.Console(1, this, "EnableLedFlash found, attempting to set value from config");
+                Debug.LogDebug(this, "EnableLedFlash found, attempting to set value from config");
                 SetLedFlashEnable((bool)PropertiesConfig.EnableLedFlash);
             }
 
             if (PropertiesConfig.RemoteTimeout != null)
             {
-                Debug.Console(1, this, "RemoteTimeout found, attempting to set value from config");
+                Debug.LogDebug(this, "RemoteTimeout found, attempting to set value from config");
                 SetRemoteTimeout((ushort)PropertiesConfig.RemoteTimeout);
             }
             else
             {
-                Debug.Console(1, this, "RemoteTimeout null, no value specified in config");
+                Debug.LogDebug(this, "RemoteTimeout null, no value specified in config");
             }
 
             if (PropertiesConfig.ShortTimeoutState != null)
@@ -214,13 +214,13 @@ namespace PDT.Plugins.Crestron.IO
 
 		protected virtual void OccSensor_BaseEvent(global::Crestron.SimplSharpPro.GenericBase device, global::Crestron.SimplSharpPro.BaseEventArgs args)
 		{
-			Debug.Console(2, this, "GlsOccupancySensorChange  EventId: {0}", args.EventId);
+			Debug.LogVerbose(this, "GlsOccupancySensorChange  EventId: {0}", args.EventId);
 
 			switch (args.EventId)
 			{
 				case GlsOccupancySensorBase.RoomVacantFeedbackEventId:
 				case GlsOccupancySensorBase.RoomOccupiedFeedbackEventId:
-					Debug.Console(1, this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
+					Debug.LogDebug(this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
 					RoomIsOccupiedFeedback.FireUpdate();
 					break;
 				case GlsOccupancySensorBase.TimeoutFeedbackEventId:
@@ -248,13 +248,13 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			InTestMode = mode;
 
-			Debug.Console(1, this, "In Mock Mode: '{0}'", InTestMode);
+			Debug.LogDebug(this, "In Mock Mode: '{0}'", InTestMode);
 		}
 
 		public void SetTestOccupiedState(bool state)
 		{
 			if (!InTestMode)
-				Debug.Console(1, "Mock mode not enabled");
+				Debug.LogDebug("Mock mode not enabled");
 			else
 			{
 				TestRoomIsOccupiedFeedback = state;
@@ -269,7 +269,7 @@ namespace PDT.Plugins.Crestron.IO
 	    /// <param name="state"></param>
 	    public void SetPirEnable(bool state)
 	    {
-	        Debug.Console(1, this, "Setting EnablePir to: {0}", state);
+	        Debug.LogDebug(this, "Setting EnablePir to: {0}", state);
 
 	        OccSensor.EnablePir.BoolValue = state;
 	        OccSensor.DisablePir.BoolValue = !state;
@@ -358,7 +358,7 @@ namespace PDT.Plugins.Crestron.IO
 
 		public void SetRemoteTimeout(ushort time)
 		{
-            Debug.Console(1, this, "Setting RemoteTimout to: {0}", time);
+            Debug.LogDebug(this, "Setting RemoteTimout to: {0}", time);
 
 			OccSensor.RemoteTimeout.UShortValue = time;
 		}
@@ -381,17 +381,17 @@ namespace PDT.Plugins.Crestron.IO
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-            Debug.Console(0, this, "Vacancy Detected: {0}",
+            Debug.LogInformation(this, "Vacancy Detected: {0}",
                 OccSensor.VacancyDetectedFeedback.BoolValue);
 
-			Debug.Console(0, this, "Timeout Current: {0} | Local: {1}",
+			Debug.LogInformation(this, "Timeout Current: {0} | Local: {1}",
 				OccSensor.CurrentTimeoutFeedback.UShortValue,
 				OccSensor.LocalTimeoutFeedback.UShortValue);
 
-			Debug.Console(0, this, "Short Timeout Enabled: {0}",
+			Debug.LogInformation(this, "Short Timeout Enabled: {0}",
 				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-			Debug.Console(0, this, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
+			Debug.LogInformation(this, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}",
 				OccSensor.PirEnabledFeedback.BoolValue,
 				OccSensor.PirSensitivityInOccupiedStateFeedback.UShortValue,
 				OccSensor.PirSensitivityInVacantStateFeedback.UShortValue);
@@ -415,10 +415,10 @@ namespace PDT.Plugins.Crestron.IO
 			}
 			else
 			{
-				Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+				Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
 			}
 
-			Debug.Console(1, occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+			Debug.LogDebug(occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
 
 			occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
 			trilist.StringInput[joinMap.Name.JoinNumber].StringValue = occController.Name;

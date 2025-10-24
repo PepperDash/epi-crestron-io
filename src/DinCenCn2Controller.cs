@@ -37,7 +37,7 @@ namespace PDT.Plugins.Crestron.IO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new DIN-CEN-CN2 Device");
+                Debug.LogDebug("Factory Attempting to create new DIN-CEN-CN2 Device");
 
                 var control = CommFactory.GetControlPropertiesConfig(dc);
                 var ipid = control.IpIdInt;

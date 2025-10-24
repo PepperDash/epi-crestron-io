@@ -115,7 +115,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             //List<string> ExcludedKeys = new List<string>();
@@ -135,21 +135,21 @@ namespace PDT.Plugins.Crestron.IO
 
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
-                    Debug.Console(0, this, "Linking Bool Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    Debug.LogInformation(this, "Linking Bool Feedback '{0}' to join {1}", name, join.JoinNumber);
                     var someFeedback = myFeedback as BoolFeedback;
                     if(someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.BooleanInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Analog)
                 {
-                    Debug.Console(0, this, "Linking Analog Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    Debug.LogInformation(this, "Linking Analog Feedback '{0}' to join {1}", name, join.JoinNumber);
                     var someFeedback = myFeedback as IntFeedback;
                     if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.UShortInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Serial)
                 {
-                    Debug.Console(0, this, "Linking Serial Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    Debug.LogInformation(this, "Linking Serial Feedback '{0}' to join {1}", name, join.JoinNumber);
                     var someFeedback = myFeedback as StringFeedback;
                     if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.StringInput[join.JoinNumber]);
@@ -161,10 +161,10 @@ namespace PDT.Plugins.Crestron.IO
             //var newJoinMap = newJoinKeys.Where(k => joinMap.Joins.ContainsKey(k)).Select(k => joinMap.Joins[k]);
 
 
-            Debug.Console(2, this, "There are {0} remote buttons", _remote.Button.Count);
+            Debug.LogVerbose(this, "There are {0} remote buttons", _remote.Button.Count);
             for (uint i = 1; i <= _remote.Button.Count; i++)
             {
-                Debug.Console(2, this, "Attempting to link join index {0}", i);
+                Debug.LogVerbose(this, "Attempting to link join index {0}", i);
                 var index = i;
                 var joinData =
                     joinMap.Joins.FirstOrDefault(
@@ -177,7 +177,7 @@ namespace PDT.Plugins.Crestron.IO
                 var join = joinData.Value;
                 var name = joinData.Key;
 
-                Debug.Console(2, this, "Setting User Object for '{0}'", name);
+                Debug.LogVerbose(this, "Setting User Object for '{0}'", name);
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
                     _remote.Button[i].SetButtonAction((b) => trilist.BooleanInput[join.JoinNumber].BoolValue = b);
@@ -531,7 +531,7 @@ namespace PDT.Plugins.Crestron.IO
             get
             {
                 var localRemote = (IHR33Button)_remote;
-                return localRemote?.Blue;
+                return localRemote?.Guide;
             }
         }
 

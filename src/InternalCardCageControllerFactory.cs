@@ -18,11 +18,11 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory attempting to build new Internal Card Cage Controller");
+            Debug.LogDebug("Factory attempting to build new Internal Card Cage Controller");
 
             if (!Global.ControlSystem.SupportsThreeSeriesPlugInCards)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, "Current control system does NOT support 3-Series cards. Everything is NOT awesome.");
+                Debug.LogWarning("Current control system does NOT support 3-Series cards. Everything is NOT awesome.");
                 return null;
             }
 
