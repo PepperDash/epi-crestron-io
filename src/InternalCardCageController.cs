@@ -100,8 +100,8 @@ namespace PDT.Plugins.Crestron.IO
                 catch (InvalidOperationException ex)
                 {
                     Debug.LogError(ex,
-                        "Unable to add card {0} to internal card cage.\r\nError Message: {1}\r\nStack Trace: {2}",
-                        cardType, ex.Message, ex.StackTrace);
+                        "Unable to add card {0} to internal card cage.",
+                        cardType);
                 }
             }
         }
