@@ -67,13 +67,13 @@ namespace PDT.Plugins.Crestron.IO
             
             if (String.IsNullOrEmpty(_config.Card))
             {
-                Debug.Console(0, this, "No card specified");
+                Debug.LogInformation(this, "No card specified");
                 return;
             }
 
             if (!_cardDict.TryGetValue(_config.Card.ToLower(), out cardBuilder))
             {
-                Debug.Console(0, "Unable to find factory for 3-Series card type {0}.", _config.Card);
+                Debug.LogInformation("Unable to find factory for 3-Series card type {0}.", _config.Card);
                 return;
             }
 

@@ -19,7 +19,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory Attempting to create new C2N-IO Device");
+            Debug.LogDebug("Factory Attempting to create new C2N-IO Device");
 
             return new C2NIoController(dc.Key, GetC2NIoDevice, dc);
         }
@@ -33,17 +33,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
                 return new C2nIo(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
                 return new C2nIo(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
     }

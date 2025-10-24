@@ -50,7 +50,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(1, this, "props are null.  Unable to deserialize into GlsPartSensorPropertiesConfig");
+                Debug.LogDebug(this, "props are null.  Unable to deserialize into GlsPartSensorPropertiesConfig");
             }
 
             AddPreActivationAction(() =>
@@ -91,36 +91,36 @@ namespace PDT.Plugins.Crestron.IO
         {
             if (_partitionSensor.IsOnline == false) return;
 
-            Debug.Console(1, this, "Attempting to apply settings to sensor from config");
+            Debug.LogDebug(this, "Attempting to apply settings to sensor from config");
 
             if (PropertiesConfig.Sensitivity != null)
             {
-                Debug.Console(1, this, "Sensitivity found, attempting to set value '{0}' from config",
+                Debug.LogDebug(this, "Sensitivity found, attempting to set value '{0}' from config",
                     PropertiesConfig.Sensitivity);
                 _partitionSensor.Sensitivity.UShortValue = (ushort)PropertiesConfig.Sensitivity;
             }
             else
             {
-                Debug.Console(1, this, "Sensitivity null, no value specified in config");
+                Debug.LogDebug(this, "Sensitivity null, no value specified in config");
             }
 
             if (PropertiesConfig.EnableSensor != null)
             {
-                Debug.Console(1, this, "Enable found, attempting to set value '{0}' from config",
+                Debug.LogDebug(this, "Enable found, attempting to set value '{0}' from config",
                     PropertiesConfig.EnableSensor);
 
                 _partitionSensor.Enable.BoolValue = PropertiesConfig.EnableSensor.Value;
             }
             else
             {
-                Debug.Console(1, this, "Enable Null, no value specific in config. Enable MUST be set using SetEnableState to use sensor");
+                Debug.LogDebug(this, "Enable Null, no value specific in config. Enable MUST be set using SetEnableState to use sensor");
             }
 
         }
 
         private void PartitionSensor_BaseEvent(GenericBase device, BaseEventArgs args)
         {
-            Debug.Console(2, this, "EventId: {0}, Index: {1}", args.EventId, args.Index);
+            Debug.LogVerbose(this, "EventId: {0}, Index: {1}", args.EventId, args.Index);
 
             switch (args.EventId)
             {
@@ -131,13 +131,13 @@ namespace PDT.Plugins.Crestron.IO
                     }
                 case (GlsPartCn.PartitionSensedFeedbackEventId):
                     {
-                        Debug.Console(1, this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
+                        Debug.LogDebug(this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
                         PartitionPresentFeedback.FireUpdate();
                         break;
                     }
                 case (GlsPartCn.PartitionNotSensedFeedbackEventId):
                     {
-                        Debug.Console(1, this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+                        Debug.LogDebug(this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
                         PartitionNotSensedFeedback.FireUpdate();
                         break;
                     }
@@ -148,7 +148,7 @@ namespace PDT.Plugins.Crestron.IO
                     }
                 default:
                     {
-                        Debug.Console(2, this, "Unhandled args.EventId: {0}", args.EventId);
+                        Debug.LogVerbose(this, "Unhandled args.EventId: {0}", args.EventId);
                         break;
                     }
             }
@@ -157,7 +157,7 @@ namespace PDT.Plugins.Crestron.IO
         public void SetTestMode(bool mode)
         {
             InTestMode = mode;
-            Debug.Console(1, this, "InTestMode: {0}", InTestMode.ToString());
+            Debug.LogDebug(this, "InTestMode: {0}", InTestMode.ToString());
         }
 
         public void SetTestEnableState(bool state)
@@ -168,11 +168,11 @@ namespace PDT.Plugins.Crestron.IO
 
                 EnableFeedback.FireUpdate();
 
-                Debug.Console(1, this, "TestEnableFeedback: {0}", TestEnableFeedback.ToString());
+                Debug.LogDebug(this, "TestEnableFeedback: {0}", TestEnableFeedback.ToString());
                 return;
             }
 
-            Debug.Console(1, this, "InTestMode: {0}, unable to set enable state: {1}", InTestMode.ToString(), state.ToString());
+            Debug.LogDebug(this, "InTestMode: {0}, unable to set enable state: {1}", InTestMode.ToString(), state.ToString());
         }
 
         public void SetTestPartitionSensedState(bool state)
@@ -184,11 +184,11 @@ namespace PDT.Plugins.Crestron.IO
                 PartitionPresentFeedback.FireUpdate();
                 PartitionNotSensedFeedback.FireUpdate();
 
-                Debug.Console(1, this, "TestPartitionSensedFeedback: {0}", TestPartitionSensedFeedback.ToString());
+                Debug.LogDebug(this, "TestPartitionSensedFeedback: {0}", TestPartitionSensedFeedback.ToString());
                 return;
             }
 
-            Debug.Console(1, this, "InTestMode: {0}, unable to set partition state: {1}", InTestMode.ToString(), state.ToString());
+            Debug.LogDebug(this, "InTestMode: {0}, unable to set partition state: {1}", InTestMode.ToString(), state.ToString());
         }
 
         public void SetTestSensitivityValue(int value)
@@ -198,11 +198,11 @@ namespace PDT.Plugins.Crestron.IO
                 TestSensitivityFeedback = value;
 
                 SensitivityFeedback.FireUpdate();
-                Debug.Console(1, this, "TestSensitivityFeedback: {0}", TestSensitivityFeedback);
+                Debug.LogDebug(this, "TestSensitivityFeedback: {0}", TestSensitivityFeedback);
                 return;
             }
 
-            Debug.Console(1, this, "InTestMode: {0}, unable to set sensitivity value: {1}", InTestMode.ToString(), value);
+            Debug.LogDebug(this, "InTestMode: {0}, unable to set sensitivity value: {1}", InTestMode.ToString(), value);
         }
 
         public void GetSettings()
@@ -210,19 +210,19 @@ namespace PDT.Plugins.Crestron.IO
             var dash = new string('*', 50);
             CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-            Debug.Console(0, this, "Enabled State: {0}", _partitionSensor.EnableFeedback.BoolValue);
+            Debug.LogInformation(this, "Enabled State: {0}", _partitionSensor.EnableFeedback.BoolValue);
 
-            Debug.Console(0, this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
-            Debug.Console(0, this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+            Debug.LogInformation(this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
+            Debug.LogInformation(this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
 
-            Debug.Console(0, this, "Sensitivity Value: {0}", _partitionSensor.SensitivityFeedback.UShortValue);
+            Debug.LogInformation(this, "Sensitivity Value: {0}", _partitionSensor.SensitivityFeedback.UShortValue);
 
             CrestronConsole.PrintLine(string.Format("{0}\n", dash));
         }
 
         public void SetEnableState(bool state)
         {
-            Debug.Console(2, this, "Sensor is {0}, SetEnableState: {1}", _partitionSensor == null ? "null" : "not null", state);
+            Debug.LogVerbose(this, "Sensor is {0}, SetEnableState: {1}", _partitionSensor == null ? "null" : "not null", state);
             if (_partitionSensor == null)
                 return;
 
@@ -231,7 +231,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public void IncreaseSensitivity()
         {
-            Debug.Console(2, this, "Sensor is {0}, IncreaseSensitivity", _partitionSensor == null ? "null" : "not null");
+            Debug.LogVerbose(this, "Sensor is {0}, IncreaseSensitivity", _partitionSensor == null ? "null" : "not null");
             if (_partitionSensor == null)
                 return;
 
@@ -240,7 +240,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public void DecreaseSensitivity()
         {
-            Debug.Console(2, this, "Sensor is {0}, DecreaseSensitivity", _partitionSensor == null ? "null" : "not null");
+            Debug.LogVerbose(this, "Sensor is {0}, DecreaseSensitivity", _partitionSensor == null ? "null" : "not null");
             if (_partitionSensor == null)
                 return;
 
@@ -249,7 +249,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public void SetSensitivity(ushort value)
         {
-            Debug.Console(2, this, "Sensor is {0}, SetSensitivity: {1}", _partitionSensor == null ? "null" : "not null", value);
+            Debug.LogVerbose(this, "Sensor is {0}, SetSensitivity: {1}", _partitionSensor == null ? "null" : "not null", value);
             if (_partitionSensor == null)
                 return;
 
@@ -270,11 +270,11 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.Console(0, this, "Please update config to use 'type': 'EiscApiAdvanced' to get all join map features for this device");
+                Debug.LogInformation(this, "Please update config to use 'type': 'EiscApiAdvanced' to get all join map features for this device");
             }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
+            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogInformation(this, "Linking to Bridge Type {0}", GetType().Name);
 
             IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
             trilist.StringInput[joinMap.Name.JoinNumber].StringValue = _partitionSensor.Name;
@@ -333,16 +333,16 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, Global.ControlSystem);
             }
 
             if (DeviceManager.GetDeviceForKey(parentKey) is IHasCresnetBranches cresnetBridge)
             {
-                Debug.Console(0, "Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.Console(0, "Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -361,7 +361,7 @@ namespace PDT.Plugins.Crestron.IO
 
             public override EssentialsDevice BuildDevice(DeviceConfig dc)
             {
-                Debug.Console(1, "Factory Attempting to create new GlsPartitionSensorController Device");
+                Debug.LogDebug("Factory Attempting to create new GlsPartitionSensorController Device");
 
                 return new GlsPartitionSensorController(dc.Key, GetGlsPartCnDevice, dc);
             }

@@ -20,7 +20,7 @@ namespace PDT.Plugins.Crestron.IO
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
         {
-            Debug.Console(1, "Factory attempting to build new CEN-CI-1");
+            Debug.LogDebug("Factory attempting to build new CEN-CI-1");
 
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
             var ipId = controlProperties.IpIdInt;
