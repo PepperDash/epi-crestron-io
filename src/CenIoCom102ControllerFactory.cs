@@ -18,18 +18,13 @@ namespace PDT.Plugins.Crestron.IO
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
-            Debug.LogInformation($"[{dc.Key}] BuildDevice: Creating CenIoCom102 Controller");
-
+        {            
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
             var ipId = controlProperties.IpIdInt;
 
             var device = new CenIoCom102(ipId, Global.ControlSystem);
-            var coms = new CenIoComController(dc.Key, dc.Name, device);
-
-            Debug.LogInformation($"[{dc.Key}] BuildDevice: Created CenIoCom102 with IP-ID-{ipId.ToString("X2")} | device is {(device == null ? "null" : "not null" )} | coms is {(coms == null ? "null" : "not null")}");
-
-            return coms;
+            
+            return new CenIoComController(dc.Key, dc.Name, device);
         }
     }
 }
