@@ -2,8 +2,6 @@
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
-using PepperDash.Core.Logging;
-using PepperDash.Core;
 
 namespace PDT.Plugins.Crestron.IO
 {
