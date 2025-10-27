@@ -16,11 +16,12 @@ namespace PDT.Plugins.Crestron.IO
         }
 
         public override EssentialsDevice BuildDevice(DeviceConfig dc)
-        {
+        {            
             var controlProperties = CommFactory.GetControlPropertiesConfig(dc);
             var ipId = controlProperties.IpIdInt;
 
             var device = new CenIoCom102(ipId, Global.ControlSystem);
+            
             return new CenIoComController(dc.Key, dc.Name, device);
         }
     }
