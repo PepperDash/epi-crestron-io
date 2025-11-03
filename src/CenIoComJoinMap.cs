@@ -18,7 +18,7 @@ namespace PDT.Plugins.Crestron.IO
                 JoinType = eJoinType.Serial
             });
 
-        [JoinName("Com1")]
+        [JoinName("Com2")]
         public JoinDataComplete Com2 = new JoinDataComplete(
             new JoinData
             {
