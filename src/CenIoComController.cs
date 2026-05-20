@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -24,9 +25,12 @@ namespace PDT.Plugins.Crestron.IO
         public CenIoComController(string key, string name, GenericBase hardware)
             : base(key, name)
         {
+            if (hardware == null)
+                throw new ArgumentNullException(nameof(hardware));
+
             _hardware = hardware as IComPorts;
             if (_hardware == null)
-                throw new ArgumentNullException("hardware", "Could not cast hardware to IComPorts");
+                throw new ArgumentException("Could not cast hardware to IComPorts", nameof(hardware));
 
             RegisterCrestronGenericBase(hardware);
         }
@@ -125,7 +129,7 @@ namespace PDT.Plugins.Crestron.IO
 
         private void PublishSerialData(Func<BridgeRegistration, uint> joinSelector, string value)
         {
-            foreach (var registration in _bridgeRegistrations.Values)
+            foreach (var registration in _bridgeRegistrations.Values.ToArray())
             {
                 registration.TriList.StringInput[joinSelector(registration)].StringValue = value;
             }
