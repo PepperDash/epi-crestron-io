@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
@@ -128,7 +129,7 @@ namespace PDT.Plugins.Crestron.IO
 
         private void PublishSerialData(Func<BridgeRegistration, uint> joinSelector, string value)
         {
-            foreach (var registration in _bridgeRegistrations.Values)
+            foreach (var registration in _bridgeRegistrations.Values.ToArray())
             {
                 registration.TriList.StringInput[joinSelector(registration)].StringValue = value;
             }
