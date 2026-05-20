@@ -24,9 +24,12 @@ namespace PDT.Plugins.Crestron.IO
         public CenIoComController(string key, string name, GenericBase hardware)
             : base(key, name)
         {
+            if (hardware == null)
+                throw new ArgumentNullException(nameof(hardware));
+
             _hardware = hardware as IComPorts;
             if (_hardware == null)
-                throw new ArgumentNullException("hardware", "Could not cast hardware to IComPorts");
+                throw new ArgumentException("Could not cast hardware to IComPorts", nameof(hardware));
 
             RegisterCrestronGenericBase(hardware);
         }
