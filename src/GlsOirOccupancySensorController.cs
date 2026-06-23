@@ -23,8 +23,7 @@ namespace PDT.Plugins.Crestron.IO
             {
                 _occSensor = preActivationFunc(config);
 
-                RegisterCrestronGenericBase(_occSensor);
-
+                // Cresnet registration + UnRegister-on-stop are handled in the base controller
                 RegisterGlsOccupancySensorBaseController(_occSensor);
             });
         }

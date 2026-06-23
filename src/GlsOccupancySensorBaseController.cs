@@ -152,6 +152,30 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			OccSensor = occSensor;
 
+			// Register the cresnet device off the activation thread, and release it when the
+			// program stops. Without UnRegister-on-stop the cresnet ID stays claimed across a
+			// program restart, so the next startup's Register() returns Failure and the sensor
+			// never comes online (ISS-007; mirrors the partition-sensor fix on branch
+			// glspartcn-registration-updates).
+			CrestronInvoke.BeginInvoke(o =>
+			{
+				RegisterCrestronGenericBase(occSensor);
+
+				// Cresnet Register() completes asynchronously: occSensor.Registered can still be
+				// false here on a registration that ultimately succeeds, leaving RegistrationFailureReason
+				// at the NO_FAILURE sentinel. Only log when the SDK reports a genuine failure reason -
+				// otherwise this logs a false "registration failed" on every successful startup.
+				if (!occSensor.Registered &&
+					occSensor.RegistrationFailureReason != global::Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationFailureReason.DEVICE_REG_UNREG_RESPONSE_NO_FAILURE)
+				{
+					Debug.LogInformation(this,
+						"Cresnet registration failed. RegistrationFailureReason: {0}",
+						occSensor.RegistrationFailureReason);
+				}
+			});
+
+			CrestronEnvironment.ProgramStatusEventHandler += HandleProgramStatusEvent;
+
 			RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
 
 			PirSensorEnabledFeedback = new BoolFeedback(() => OccSensor.PirEnabledFeedback.BoolValue);
@@ -182,6 +206,26 @@ namespace PDT.Plugins.Crestron.IO
 			OccSensor.BaseEvent += OccSensor_BaseEvent;
 
 			OccSensor.GlsOccupancySensorChange += OccSensor_GlsOccupancySensorChange;
+		}
+
+		/// <summary>
+		/// On program stop, unsubscribe from sensor events and unregister the cresnet device so
+		/// its ID is released for the next program start. Prevents the "result Failure" on
+		/// re-registration after a restart (ISS-007).
+		/// </summary>
+		private void HandleProgramStatusEvent(eProgramStatusEventType programEventType)
+		{
+			if (programEventType != eProgramStatusEventType.Stopping)
+				return;
+
+			Debug.LogDebug(this, "Program stopping - unregistering occupancy sensor");
+
+			if (OccSensor == null)
+				return;
+
+			OccSensor.BaseEvent -= OccSensor_BaseEvent;
+			OccSensor.GlsOccupancySensorChange -= OccSensor_GlsOccupancySensorChange;
+			OccSensor.UnRegister();
 		}
 
 
