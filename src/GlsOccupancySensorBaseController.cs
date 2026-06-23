@@ -174,6 +174,10 @@ namespace PDT.Plugins.Crestron.IO
 				}
 			});
 
+			// ProgramStatusEventHandler is a static, process-global event. Remove before adding so a
+			// repeat call for the same instance can't create duplicate subscriptions (and duplicate
+			// UnRegister() calls on stop).
+			CrestronEnvironment.ProgramStatusEventHandler -= HandleProgramStatusEvent;
 			CrestronEnvironment.ProgramStatusEventHandler += HandleProgramStatusEvent;
 
 			RoomIsOccupiedFeedback = new BoolFeedback(RoomIsOccupiedFeedbackFunc);
@@ -217,6 +221,10 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			if (programEventType != eProgramStatusEventType.Stopping)
 				return;
+
+			// Unsubscribe from the static event first so this instance is not kept alive by it and
+			// the handler can't fire again for a subsequent stop.
+			CrestronEnvironment.ProgramStatusEventHandler -= HandleProgramStatusEvent;
 
 			Debug.LogDebug(this, "Program stopping - unregistering occupancy sensor");
 
