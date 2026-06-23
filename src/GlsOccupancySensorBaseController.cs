@@ -159,6 +159,12 @@ namespace PDT.Plugins.Crestron.IO
 			// glspartcn-registration-updates).
 			CrestronInvoke.BeginInvoke(o =>
 			{
+				// If the program started stopping (OccSensor cleared/replaced) before this queued
+				// callback ran, skip registering - re-registering here would re-claim the cresnet
+				// ID after the UnRegister-on-stop and defeat the release.
+				if (OccSensor != occSensor)
+					return;
+
 				RegisterCrestronGenericBase(occSensor);
 
 				// Cresnet Register() completes asynchronously: occSensor.Registered can still be
@@ -228,12 +234,17 @@ namespace PDT.Plugins.Crestron.IO
 
 			Debug.LogDebug(this, "Program stopping - unregistering occupancy sensor");
 
-			if (OccSensor == null)
+			// Snapshot and clear the reference first so the queued BeginInvoke registration callback
+			// (if it has not run yet) no-ops instead of re-registering a device being torn down.
+			var occSensor = OccSensor;
+			OccSensor = null;
+
+			if (occSensor == null)
 				return;
 
-			OccSensor.BaseEvent -= OccSensor_BaseEvent;
-			OccSensor.GlsOccupancySensorChange -= OccSensor_GlsOccupancySensorChange;
-			OccSensor.UnRegister();
+			occSensor.BaseEvent -= OccSensor_BaseEvent;
+			occSensor.GlsOccupancySensorChange -= OccSensor_GlsOccupancySensorChange;
+			occSensor.UnRegister();
 		}
 
 
