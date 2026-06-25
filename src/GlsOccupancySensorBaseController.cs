@@ -152,33 +152,25 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			OccSensor = occSensor;
 
-			// Register the cresnet device off the activation thread, and release it when the
-			// program stops. Without UnRegister-on-stop the cresnet ID stays claimed across a
-			// program restart, so the next startup's Register() returns Failure and the sensor
-			// never comes online (ISS-007; mirrors the partition-sensor fix on branch
-			// glspartcn-registration-updates).
-			CrestronInvoke.BeginInvoke(o =>
+			// Register the cresnet device SYNCHRONOUSLY on the activation thread - the standard
+			// Essentials pattern used by CenOdtOccupancySensorBaseController and by every other
+			// device in a full room config. A previous revision deferred this with
+			// CrestronInvoke.BeginInvoke, but in a fully-loaded dual-program config the EISC-bridge
+			// registration burst saturated the shared CrestronInvoke threadpool, so the queued
+			// cresnet Register() ran late and collided with that burst - returning Failure with the
+			// NO_FAILURE sentinel and leaving the sensor permanently unregistered.
+			// Run synchronously here (during this device's Activation, BEFORE the bridges register)
+			// which is exactly when registration succeeds in every isolation test. UnRegister-on-stop
+			// is retained below to release the cresnet ID across a program restart.
+			RegisterCrestronGenericBase(occSensor);
+
+			if (!occSensor.Registered &&
+				occSensor.RegistrationFailureReason != global::Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationFailureReason.DEVICE_REG_UNREG_RESPONSE_NO_FAILURE)
 			{
-				// If the program started stopping (OccSensor cleared/replaced) before this queued
-				// callback ran, skip registering - re-registering here would re-claim the cresnet
-				// ID after the UnRegister-on-stop and defeat the release.
-				if (OccSensor != occSensor)
-					return;
-
-				RegisterCrestronGenericBase(occSensor);
-
-				// Cresnet Register() completes asynchronously: occSensor.Registered can still be
-				// false here on a registration that ultimately succeeds, leaving RegistrationFailureReason
-				// at the NO_FAILURE sentinel. Only log when the SDK reports a genuine failure reason -
-				// otherwise this logs a false "registration failed" on every successful startup.
-				if (!occSensor.Registered &&
-					occSensor.RegistrationFailureReason != global::Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationFailureReason.DEVICE_REG_UNREG_RESPONSE_NO_FAILURE)
-				{
-					Debug.LogInformation(this,
-						"Cresnet registration failed. RegistrationFailureReason: {0}",
-						occSensor.RegistrationFailureReason);
-				}
-			});
+				Debug.LogInformation(this,
+					"Cresnet registration failed. RegistrationFailureReason: {0}",
+					occSensor.RegistrationFailureReason);
+			}
 
 			// ProgramStatusEventHandler is a static, process-global event. Remove before adding so a
 			// repeat call for the same instance can't create duplicate subscriptions (and duplicate
@@ -234,8 +226,8 @@ namespace PDT.Plugins.Crestron.IO
 
 			Debug.LogDebug(this, "Program stopping - unregistering occupancy sensor");
 
-			// Snapshot and clear the reference first so the queued BeginInvoke registration callback
-			// (if it has not run yet) no-ops instead of re-registering a device being torn down.
+			// Snapshot and clear the reference so feedback funcs that read OccSensor during teardown
+			// see a clean null rather than a half-unregistered device.
 			var occSensor = OccSensor;
 			OccSensor = null;
 
