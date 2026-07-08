@@ -57,7 +57,7 @@ namespace PDT.Plugins.Crestron.IO
             {
                 _partitionSensor = preActivationFunc(config);
 
-                CrestronInvoke.BeginInvoke((o) => RegisterCrestronGenericBase(_partitionSensor));
+if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGenericBase(_partitionSensor));
 
                 EnableFeedback = new BoolFeedback(() => InTestMode ? TestEnableFeedback : _partitionSensor.EnableFeedback.BoolValue);
                 PartitionPresentFeedback = new BoolFeedback(() => InTestMode ? TestPartitionSensedFeedback : _partitionSensor.PartitionSensedFeedback.BoolValue);
