@@ -357,3 +357,6 @@ MigrationBackup/
 *.clz
 *.projectinfo
 *.suo
+
+# Agent files
+.agent-context/

@@ -18,6 +18,15 @@ namespace PDT.Plugins.Crestron.IO
 
 	    protected GlsOccupancySensorBase OccSensor;
 
+		// Background timer that re-attempts cresnet registration when the sensor is offline or at the
+		// wrong cresnet ID at program start. A cresnet device that fails its initial Register() stays
+		// unregistered (and never fires OnlineStatusChange), so without this it would take a program
+		// restart to recover. Polls every RegistrationRetryMs until registration succeeds or the
+		// program stops.
+		private CTimer _registrationRetryTimer;
+
+		private const long RegistrationRetryMs = 30000;
+
 		public BoolFeedback RoomIsOccupiedFeedback { get; private set; }
 
 		public BoolFeedback GraceOccupancyDetectedFeedback { get; private set; }
@@ -79,6 +88,12 @@ namespace PDT.Plugins.Crestron.IO
                 {
                     OccSensor.OnlineStatusChange += (o, a) =>
                     {
+                        // Fire the online feedback ourselves. On the registration-recovery path the
+                        // base CrestronGenericBaseDevice.CustomActivate() returned early (before wiring
+                        // its own online handler), so this is the only thing keeping the IsOnline
+                        // feedback/bridge join current once the sensor comes online.
+                        IsOnline.FireUpdate();
+
                         if (a.DeviceOnLine)
                         {
                             ApplySettingsToSensorFromConfig();
@@ -164,13 +179,10 @@ namespace PDT.Plugins.Crestron.IO
 			// is retained below to release the cresnet ID across a program restart.
 			RegisterCrestronGenericBase(occSensor);
 
-			if (!occSensor.Registered &&
-				occSensor.RegistrationFailureReason != global::Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationFailureReason.DEVICE_REG_UNREG_RESPONSE_NO_FAILURE)
-			{
-				Debug.LogInformation(this,
-					"Cresnet registration failed. RegistrationFailureReason: {0}",
-					occSensor.RegistrationFailureReason);
-			}
+			// NOTE: RegisterCrestronGenericBase only wires up Hardware/feedbacks/monitor - the actual
+			// cresnet Register() happens later in the base CustomActivate(). Registration success, and
+			// the retry-on-failure path for a sensor that is offline at startup, are handled in our
+			// CustomActivate() override below.
 
 			// ProgramStatusEventHandler is a static, process-global event. Remove before adding so a
 			// repeat call for the same instance can't create duplicate subscriptions (and duplicate
@@ -211,6 +223,96 @@ namespace PDT.Plugins.Crestron.IO
 		}
 
 		/// <summary>
+		/// Activates the device (registering the cresnet sensor via the base) and, if the sensor did
+		/// not register because it is offline or set to a different cresnet ID, starts a background
+		/// retry so it recovers automatically when later brought online or its ID is corrected -
+		/// without requiring a program restart.
+		/// </summary>
+		public override bool CustomActivate()
+		{
+			var result = base.CustomActivate();
+
+			if (OccSensor != null && !OccSensor.Registered)
+			{
+				Debug.LogInformation(this,
+					"Occupancy sensor did not register at activation (offline or cresnet ID mismatch). Starting background registration retry every {0}ms.",
+					RegistrationRetryMs);
+				StartRegistrationRetryTimer();
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Starts (or restarts) the periodic registration-retry timer.
+		/// </summary>
+		private void StartRegistrationRetryTimer()
+		{
+			StopRegistrationRetryTimer();
+			_registrationRetryTimer = new CTimer(o => AttemptRegistration(), null, RegistrationRetryMs, RegistrationRetryMs);
+		}
+
+		/// <summary>
+		/// Stops and disposes the registration-retry timer if it is running.
+		/// </summary>
+		private void StopRegistrationRetryTimer()
+		{
+			if (_registrationRetryTimer == null)
+				return;
+
+			_registrationRetryTimer.Stop();
+			_registrationRetryTimer.Dispose();
+			_registrationRetryTimer = null;
+		}
+
+		/// <summary>
+		/// Periodic retry: re-attempts the cresnet registration. Once it succeeds, finishes the
+		/// activation work the base CustomActivate() skipped when it bailed on the failed initial
+		/// registration (fire status feedbacks, start the comms monitor, apply config) and stops the
+		/// timer. Keeps retrying until the sensor registers or the program stops.
+		/// </summary>
+		private void AttemptRegistration()
+		{
+			var occSensor = OccSensor;
+
+			// Cleared on program stop - nothing left to do.
+			if (occSensor == null)
+			{
+				StopRegistrationRetryTimer();
+				return;
+			}
+
+			if (occSensor.Registered)
+			{
+				StopRegistrationRetryTimer();
+				return;
+			}
+
+			var result = occSensor.RegisterWithLogging(Key);
+
+			if (result != global::Crestron.SimplSharpPro.eDeviceRegistrationUnRegistrationResponse.Success)
+			{
+				// Still offline / wrong ID - leave the timer running and try again next interval.
+				return;
+			}
+
+			Debug.LogInformation(this, "Occupancy sensor registration recovered. Sensor is now registered.");
+
+			StopRegistrationRetryTimer();
+
+			// The base CustomActivate() returned early on the failed initial registration, so it never
+			// fired these feedbacks or started the comms monitor. Do that now.
+			IsRegistered.FireUpdate();
+			IsOnline.FireUpdate();
+			CommunicationMonitor.Start();
+
+			if (occSensor.IsOnline)
+			{
+				ApplySettingsToSensorFromConfig();
+			}
+		}
+
+		/// <summary>
 		/// On program stop, unsubscribe from sensor events and unregister the cresnet device so
 		/// its ID is released for the next program start. Prevents the "result Failure" on
 		/// re-registration after a restart (ISS-007).
@@ -223,6 +325,9 @@ namespace PDT.Plugins.Crestron.IO
 			// Unsubscribe from the static event first so this instance is not kept alive by it and
 			// the handler can't fire again for a subsequent stop.
 			CrestronEnvironment.ProgramStatusEventHandler -= HandleProgramStatusEvent;
+
+			// Stop the registration-retry timer so it can't fire (and touch the sensor) during teardown.
+			StopRegistrationRetryTimer();
 
 			Debug.LogDebug(this, "Program stopping - unregistering occupancy sensor");
 
