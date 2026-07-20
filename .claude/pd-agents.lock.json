@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "source": {
+    "repo": "PepperDash-Engineering/pdt-copilot-agents"
+  },
+  "vendorRoot": ".claude/pd",
+  "installer": {
+    "sha": "90a46dd15cde5141b155b4db4d135795aa7e4b34",
+    "sourcePath": "scripts/pd-agents.ps1"
+  },
+  "packages": {
+    "review-pr-comments": {
+      "type": "skill",
+      "sha": "90a46dd15cde5141b155b4db4d135795aa7e4b34",
+      "installedAt": "2026-07-20T20:35:03Z",
+      "sourcePaths": [
+        "skills/review-pr-comments"
+      ],
+      "deps": [
+        "skills/contribute"
+      ],
+      "peerRefs": [
+        "crestron-processor"
+      ],
+      "files": {
+        ".claude/pd/skills/review-pr-comments/SKILL.md": "sha256:a67b8541ce471c5d11d430de2c4230c96b6e73d1cf221f8d2e4b4ed85277a9e5",
+        ".claude/pd/skills/contribute/SKILL.md": "sha256:8d16feac0ac65c911dd93b18e2c9de1f761e479dea82fe8662c4696d8a695f2d",
+        ".claude/skills/review-pr-comments/SKILL.md": "sha256:4f4a7e3b4ee71fe1538b6d6275d0c7b4714325b2850665f25a1dae473debf08f",
+        ".claude/skills/contribute/SKILL.md": "sha256:12be3c86cb3e44ce6383b2b664a3f656e3e5a35853ba47b7faf92dd9b11dbf61"
+      }
+    }
+  }
+}
