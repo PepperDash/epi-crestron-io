@@ -4,13 +4,13 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CenCi33ControllerFactory : EssentialsPluginDeviceFactory<CenCi33Controller>
     {
         public CenCi33ControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
 
 
             TypeNames = new List<string> {"cenci33"};

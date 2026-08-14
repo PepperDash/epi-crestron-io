@@ -1,4 +1,4 @@
-﻿namespace PDT.Plugins.Crestron.IO
+﻿namespace PepperDash.Essentials.Plugins
 {
     public class CenCn2Controller
     {

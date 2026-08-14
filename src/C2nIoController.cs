@@ -4,7 +4,7 @@ using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class C2NIoController : CrestronGenericBaseDevice, IComPorts, IIROutputPorts, IRelayPorts
     {

@@ -7,13 +7,14 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.DeviceTypeInterfaces;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [Description("Wrapper class for the C2N-RTHS sensor")]
     public class C2nRthsController : CrestronGenericBridgeableBaseDevice, ITemperatureSensor, IHumiditySensor
@@ -39,7 +40,7 @@ namespace PDT.Plugins.Crestron.IO
                 _device = preActivationFunc(config);
                 if (_device == null)
                 {
-                    Debug.LogInformation(this, "ERROR: Unable to create C2nRths Device");
+                    this.LogError("Unable to create C2nRths Device");
                     return;
                 }
 
@@ -53,7 +54,7 @@ namespace PDT.Plugins.Crestron.IO
                 _device.BaseEvent += DeviceOnBaseEvent;
                 
                 _device.OnlineStatusChange += (d, args) => 
-                    Debug.LogDebug(this, "Device status change... Online:{0} Temp:{1} Humidity{2}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
+                    this.LogDebug("Device status change... Online:{IsOnline} Temp:{Temperature} Humidity:{Humidity}", _device.IsOnline, _device.TemperatureFeedback.UShortValue, _device.HumidityFeedback.UShortValue);
             });
         }
 
@@ -93,10 +94,10 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogInformation("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            this.LogDebug("Linking to Trilist '{TrilistId}'", trilist.ID.ToString("X"));
 
 
             trilist.SetBoolSigAction(joinMap.TemperatureFormat.JoinNumber, SetTemperatureFormat);
@@ -138,17 +139,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new C2nRths", parentKey);
                 return new C2nRths(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nRths", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new C2nRths", parentKey);
                 return new C2nRths(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -157,7 +158,7 @@ namespace PDT.Plugins.Crestron.IO
         {
             public C2nRthsControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
+                MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
 
 
                 TypeNames = new List<string>() { "c2nrths" };

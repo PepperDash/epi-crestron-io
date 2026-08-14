@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PepperDash.Essentials.Core;
-using static PDT.Plugins.Crestron.IO.CenRfgwController;
+using static PepperDash.Essentials.Plugins.CenRfgwController;
 
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class EssentialsRfGatewayConfig
     {

@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [Description("Wrapper class for all HR-Series remotes")]
     public class Hrxx0WirelessRemoteController : EssentialsBridgeableDevice, IHasFeedback, IHR52Button
@@ -115,7 +115,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogInformation("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
             //List<string> ExcludedKeys = new List<string>();
@@ -135,21 +135,21 @@ namespace PDT.Plugins.Crestron.IO
 
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
-                    Debug.LogInformation(this, "Linking Bool Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    this.LogInformation("Linking Bool Feedback '{Name}' to join {JoinNumber}", name, join.JoinNumber);
                     var someFeedback = myFeedback as BoolFeedback;
                     if(someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.BooleanInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Analog)
                 {
-                    Debug.LogInformation(this, "Linking Analog Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    this.LogInformation("Linking Analog Feedback '{Name}' to join {JoinNumber}", name, join.JoinNumber);
                     var someFeedback = myFeedback as IntFeedback;
                     if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.UShortInput[join.JoinNumber]);
                 }
                 if (join.Metadata.JoinType == eJoinType.Serial)
                 {
-                    Debug.LogInformation(this, "Linking Serial Feedback '{0}' to join {1}", name, join.JoinNumber);
+                    this.LogInformation("Linking Serial Feedback '{Name}' to join {JoinNumber}", name, join.JoinNumber);
                     var someFeedback = myFeedback as StringFeedback;
                     if (someFeedback == null) continue;
                     someFeedback.LinkInputSig(trilist.StringInput[join.JoinNumber]);
@@ -161,10 +161,10 @@ namespace PDT.Plugins.Crestron.IO
             //var newJoinMap = newJoinKeys.Where(k => joinMap.Joins.ContainsKey(k)).Select(k => joinMap.Joins[k]);
 
 
-            Debug.LogVerbose(this, "There are {0} remote buttons", _remote.Button.Count);
+            this.LogVerbose("There are {ButtonCount} remote buttons", _remote.Button.Count);
             for (uint i = 1; i <= _remote.Button.Count; i++)
             {
-                Debug.LogVerbose(this, "Attempting to link join index {0}", i);
+                this.LogVerbose("Attempting to link join index {Index}", i);
                 var index = i;
                 var joinData =
                     joinMap.Joins.FirstOrDefault(
@@ -177,7 +177,7 @@ namespace PDT.Plugins.Crestron.IO
                 var join = joinData.Value;
                 var name = joinData.Key;
 
-                Debug.LogVerbose(this, "Setting User Object for '{0}'", name);
+                this.LogVerbose("Setting User Object for '{Name}'", name);
                 if (join.Metadata.JoinType == eJoinType.Digital)
                 {
                     _remote.Button[i].SetButtonAction((b) => trilist.BooleanInput[join.JoinNumber].BoolValue = b);
@@ -701,7 +701,7 @@ namespace PDT.Plugins.Crestron.IO
     {
         public Hrxx0WirelessRemoteControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
 
             TypeNames = new List<string>() { "hr100", "hr150", "hr310" };
         }

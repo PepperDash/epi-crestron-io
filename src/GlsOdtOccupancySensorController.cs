@@ -4,11 +4,12 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
 	[Description("Wrapper class for Dual Technology GLS Occupancy Sensors")]
     [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
@@ -70,23 +71,23 @@ namespace PDT.Plugins.Crestron.IO
 
             if (PropertiesConfig.EnableUsA != null)
             {
-                Debug.LogDebug(this, "EnableUsA found, attempting to set value from config");
+                this.LogDebug("EnableUsA found, attempting to set value from config");
                 SetUsAEnable((bool)PropertiesConfig.EnableUsA);   
             }
             else
             {
-                Debug.LogDebug(this, "EnableUsA null, no value specified in config");
+                this.LogDebug("EnableUsA null, no value specified in config");
             }
 
 
             if (PropertiesConfig.EnableUsB != null)
             {
-                Debug.LogDebug(this, "EnableUsB found, attempting to set value from config");
+                this.LogDebug("EnableUsB found, attempting to set value from config");
                 SetUsBEnable((bool)PropertiesConfig.EnableUsB);
             }
             else
             {
-                Debug.LogDebug(this, "EnablePir null, no value specified in config");
+                this.LogDebug("EnablePir null, no value specified in config");
             }
 
 
@@ -226,11 +227,11 @@ namespace PDT.Plugins.Crestron.IO
 		{
             base.GetSettings();
 
-			Debug.LogInformation(this, "Ultrasonic Enabled A: {0} | B: {1}",
+			this.LogInformation("Ultrasonic Enabled A: {UsAEnabled} | B: {UsBEnabled}",
 				_occSensor.UsAEnabledFeedback.BoolValue,
 				_occSensor.UsBEnabledFeedback.BoolValue);
 
-			Debug.LogInformation(this, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
+			this.LogInformation("Ultrasonic Sensitivity Occupied: {UsSensitivityOccupied} | Vacant: {UsSensitivityVacant}",
 				_occSensor.UsSensitivityInOccupiedStateFeedback.UShortValue,
 				_occSensor.UsSensitivityInVacantStateFeedback.UShortValue);
 
@@ -244,7 +245,7 @@ namespace PDT.Plugins.Crestron.IO
     {
         public GlsOdtOccupancySensorControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
 
 
             TypeNames = new List<string> { "glsodtccn" };
@@ -267,17 +268,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
                 return new GlsOdtCCn(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsOdtCCn", parentKey);
                 return new GlsOdtCCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
     }

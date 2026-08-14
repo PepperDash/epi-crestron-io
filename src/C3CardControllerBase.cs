@@ -2,7 +2,7 @@
 using Crestron.SimplSharpProInternal;
 using PepperDash.Essentials.Core;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class C3CardControllerBase:CrestronGenericBaseDevice
     {

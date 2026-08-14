@@ -1,6 +1,6 @@
 using PepperDash.Essentials.Core;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CenIoComJoinMap : JoinMapBaseAdvanced
     {

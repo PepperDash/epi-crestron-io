@@ -5,13 +5,13 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class C2NIoControllerFactory : EssentialsPluginDeviceFactory<C2NIoController>
     {
         public C2NIoControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
 
 
             TypeNames = new List<string>() { "c2nio" };
@@ -33,17 +33,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new C2nIo", parentKey);
                 return new C2nIo(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new C2nIo", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new C2nIo", parentKey);
                 return new C2nIo(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
     }

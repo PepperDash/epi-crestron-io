@@ -2,7 +2,7 @@
 using Crestron.SimplSharpPro.GeneralIO;
 using PepperDash.Essentials.Core;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     /// <summary>
     /// Wrapper class for CEN-IO-RY-104 relay module

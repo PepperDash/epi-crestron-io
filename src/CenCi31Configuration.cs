@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CenCi31Configuration
     {
