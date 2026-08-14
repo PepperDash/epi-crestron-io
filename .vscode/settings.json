@@ -1,5 +1,32 @@
 {
-    "workbench.colorCustomizations": {
-    },
-    "peacock.color": "#487659"
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#5b9671",
+    "activityBar.background": "#5b9671",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#ccc3db",
+    "activityBarBadge.foreground": "#15202b",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#5b9671",
+    "statusBar.background": "#487659",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#5b9671",
+    "statusBarItem.remoteBackground": "#aa9cc3",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#487659",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#48765999",
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "activityBarTop.activeBackground": "#5b9671",
+    "activityBarTop.background": "#5b9671",
+    "activityBarTop.foreground": "#15202b",
+    "activityBarTop.inactiveForeground": "#15202b99",
+    "commandCenter.foreground": "#e7e7e7",
+    "statusBar.debuggingBackground": "#487659",
+    "statusBar.debuggingForeground": "#e7e7e7"
+  },
+  "peacock.color": "#487659",
+  "chat.agentFilesLocations": {
+    ".claude/agents": true
+  }
 }
