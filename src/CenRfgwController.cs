@@ -7,7 +7,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [Description("Wrapper class for Crestron Infinet-EX Gateways")]
     public class CenRfgwController : CrestronGenericBaseDevice
@@ -59,7 +59,7 @@ namespace PDT.Plugins.Crestron.IO
     {
         public CenRfgwControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
             TypeNames = new List<string> { "cenrfgwex", "cenerfgwpoe", "cengwexer", "internal", "cengw1" };
         }

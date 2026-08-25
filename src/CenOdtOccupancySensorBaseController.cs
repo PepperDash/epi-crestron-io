@@ -5,11 +5,12 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
 	[Description("Wrapper class for CEN-ODT-C-POE")]
     [ConfigSnippet("\"properties\": {\"control\": {\"method\": \"cresnet\",\"cresnetId\": \"97\"},\"enablePir\": true,\"enableLedFlash\": true,\"enableRawStates\":true,\"remoteTimeout\": 30,\"internalPhotoSensorMinChange\": 0,\"externalPhotoSensorMinChange\": 0,\"enableUsA\": true,\"enableUsB\": true,\"orWhenVacatedState\": true}")]
@@ -150,7 +151,7 @@ namespace PDT.Plugins.Crestron.IO
         /// </summary>
         protected virtual void ApplySettingsToSensorFromConfig()
         {
-            Debug.LogDebug(this, "Checking config for settings to apply");
+            this.LogDebug("Checking config for settings to apply");
 
             if (PropertiesConfig.EnablePir != null)
             {
@@ -249,12 +250,12 @@ namespace PDT.Plugins.Crestron.IO
 
 		protected virtual void OccSensor_BaseEvent(global::Crestron.SimplSharpPro.GenericBase device, global::Crestron.SimplSharpPro.BaseEventArgs args)
 		{
-			Debug.LogVerbose(this, "PoEOccupancySensorChange  EventId: {0}", args.EventId);
+			this.LogVerbose("PoEOccupancySensorChange EventId: {EventId}", args.EventId);
 
 			if (args.EventId == global::Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomOccupiedFeedbackEventId
 				|| args.EventId == global::Crestron.SimplSharpPro.GeneralIO.GlsOccupancySensorBase.RoomVacantFeedbackEventId)
 			{
-				Debug.LogDebug(this, "Occupancy State: {0}", OccSensor.OccupancyDetectedFeedback.BoolValue);
+				this.LogDebug("Occupancy State: {OccupancyState}", OccSensor.OccupancyDetectedFeedback.BoolValue);
 				RoomIsOccupiedFeedback.FireUpdate();
 			}
 			else if (args.EventId == GlsOccupancySensorBase.TimeoutFeedbackEventId)
@@ -287,13 +288,13 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			InTestMode = mode;
 
-			Debug.LogDebug(this, "In Mock Mode: '{0}'", InTestMode);
+			this.LogDebug("In Mock Mode: '{InTestMode}'", InTestMode);
 		}
 
 		public void SetTestOccupiedState(bool state)
 		{
 			if (!InTestMode)
-				Debug.LogDebug("Mock mode not enabled");
+				this.LogDebug("Mock mode not enabled");
 			else
 			{
 				TestRoomIsOccupiedFeedback = state;
@@ -313,7 +314,7 @@ namespace PDT.Plugins.Crestron.IO
             else
                 OccSensor.IdentityModeOff();
 
-            Debug.LogDebug(this, "Identity Mode: {0}", OccSensor.IdentityModeOnFeedback.BoolValue ? "On" : "Off");
+            this.LogDebug("Identity Mode: {IdentityMode}", OccSensor.IdentityModeOnFeedback.BoolValue ? "On" : "Off");
         }
 
 	    /// <summary>
@@ -599,26 +600,26 @@ namespace PDT.Plugins.Crestron.IO
 			var dash = new string('*', 50);
 			CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-            Debug.LogInformation(this, "Vacancy Detected: {0}",
+            this.LogInformation("Vacancy Detected: {VacancyDetected}",
                 OccSensor.VacancyDetectedFeedback.BoolValue);
 
-			Debug.LogInformation(Key, "Timeout Current: {0} | Remote: {1}",
+			this.LogInformation("Timeout Current: {CurrentTimeout} | Remote: {RemoteTimeout}",
 				OccSensor.CurrentTimeoutFeedback.UShortValue,
 				OccSensor.RemoteTimeout.UShortValue);
 
-			Debug.LogInformation(Key, "Short Timeout Enabled: {0}",
+			this.LogInformation("Short Timeout Enabled: {ShortTimeoutEnabled}",
 				OccSensor.ShortTimeoutEnabledFeedback.BoolValue);
 
-			Debug.LogInformation(Key, "PIR Sensor Enabled: {0} | Sensitivity Occupied: {1} | Sensitivity Vacant: {2}", 
+			this.LogInformation("PIR Sensor Enabled: {PirEnabled} | Sensitivity Occupied: {PirSensitivityOccupied} | Sensitivity Vacant: {PirSensitivityVacant}", 
 				OccSensor.PassiveInfraredSensorEnabledFeedback.BoolValue,
 				OccSensor.PassiveInfraredSensorSensitivityInOccupiedStateFeedback,
 				OccSensor.PassiveInfraredSensorSensitivityInVacantStateFeedback);
 
-			Debug.LogInformation(Key, "Ultrasonic Enabled A: {0} | B: {1}", 
+			this.LogInformation("Ultrasonic Enabled A: {UsAEnabled} | B: {UsBEnabled}", 
 				OccSensor.UltrasonicSensorSideAEnabledFeedback.BoolValue,
 				OccSensor.UltrasonicSensorSideBEnabledFeedback.BoolValue);
 
-			Debug.LogInformation(Key, "Ultrasonic Sensitivity Occupied: {0} | Vacant: {1}",
+			this.LogInformation("Ultrasonic Sensitivity Occupied: {UsSensitivityOccupied} | Vacant: {UsSensitivityVacant}",
 				OccSensor.UltrasonicSensorSensitivityInOccupiedStateFeedback,
 				OccSensor.UltrasonicSensorSensitivityInVacantStateFeedback);
 
@@ -647,10 +648,10 @@ namespace PDT.Plugins.Crestron.IO
 			}
 			else
 			{
-				Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+				this.LogInformation("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
 			}
 
-			Debug.LogDebug(occController, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+			occController.LogDebug("Linking to Trilist '{TrilistId}'", trilist.ID.ToString("X"));
 
 			occController.IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.Online.JoinNumber]);
 			trilist.StringInput[joinMap.Name.JoinNumber].StringValue = occController.Name;
@@ -743,7 +744,7 @@ namespace PDT.Plugins.Crestron.IO
 		{
 			public CenOdtOccupancySensorBaseControllerFactory()
 			{
-                MinimumEssentialsFrameworkVersion = "2.0.0";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
                 TypeNames = new List<string>() { "cenodtcpoe", "cenodtocc" };
@@ -764,7 +765,7 @@ namespace PDT.Plugins.Crestron.IO
 
 				if (occSensor == null)
 				{
-					Debug.LogInformation("ERROR: Unable to create Occupancy Sensor Device. Key: '{0}'", key);
+					Debug.LogInformation("ERROR: Unable to create Occupancy Sensor Device. Key: '{Key}'", key);
 					return null;
 				}
 

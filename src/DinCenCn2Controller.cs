@@ -6,7 +6,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class DinCenCn2Controller : CrestronGenericBaseDevice, IHasCresnetBranches
     {
@@ -29,7 +29,7 @@ namespace PDT.Plugins.Crestron.IO
         {
             public DinCenCn2ControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
                 TypeNames = new List<string>() { "dincencn2", "dincencn2poe", "din-cencn2", "din-cencn2-poe" };

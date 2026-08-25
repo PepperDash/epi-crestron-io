@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using Crestron.SimplSharpPro.ThreeSeriesCards;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [ConfigSnippet("\"properties\":{\"card\":\"c3com3\"}")]
     public class CenCi31Controller : CrestronGenericBaseDevice
@@ -67,13 +68,13 @@ namespace PDT.Plugins.Crestron.IO
             
             if (String.IsNullOrEmpty(_config.Card))
             {
-                Debug.LogInformation(this, "No card specified");
+                this.LogInformation("No card specified");
                 return;
             }
 
             if (!_cardDict.TryGetValue(_config.Card.ToLower(), out cardBuilder))
             {
-                Debug.LogInformation("Unable to find factory for 3-Series card type {0}.", _config.Card);
+                this.LogInformation("Unable to find factory for 3-Series card type {CardType}.", _config.Card);
                 return;
             }
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CenCi33Configuration
     {

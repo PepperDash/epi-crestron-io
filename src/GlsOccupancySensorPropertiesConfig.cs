@@ -1,7 +1,7 @@
 ﻿
 using Newtonsoft.Json;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     /// <summary>
     /// Defines configuration properties for Crestron GLS series occupancy sensors

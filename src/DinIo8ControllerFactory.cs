@@ -5,13 +5,13 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class DinIo8ControllerFactory : EssentialsPluginDeviceFactory<DinIo8Controller>
     {
         public DinIo8ControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string>() { "DinIo8" };
@@ -33,17 +33,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new DinIo8", parentKey);
                 return new DinIo8(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new DinIo8", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new DinIo8", parentKey);
                 return new DinIo8(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
     }

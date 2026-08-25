@@ -6,11 +6,12 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [Description("Wrapper class for the Crestron StatusSign device")]
     public class StatusSignController : CrestronGenericBridgeableBaseDevice
@@ -94,7 +95,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.LogDebug(this, "Error converting value to Red LED brightness. value: {0}", red);
+                this.LogDebug("Error converting value to Red LED brightness. value: {Value}", red);
             }
             try
             {
@@ -103,7 +104,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.LogDebug(this, "Error converting value to Green LED brightness. value: {0}", green);
+                this.LogDebug("Error converting value to Green LED brightness. value: {Value}", green);
             }
 
             try
@@ -113,7 +114,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             catch (InvalidOperationException)
             {
-                Debug.LogDebug(this, "Error converting value to Blue LED brightness. value: {0}", blue);
+                this.LogDebug("Error converting value to Blue LED brightness. value: {Value}", blue);
             }
         }
 
@@ -132,10 +133,10 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogInformation("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            this.LogDebug("Linking to Trilist '{TrilistId}'", trilist.ID.ToString("X"));
 
             trilist.SetBoolSigAction(joinMap.RedControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
             trilist.SetBoolSigAction(joinMap.GreenControl.JoinNumber, b => EnableControl(trilist, joinMap, this));
@@ -187,17 +188,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new StatusSign", parentKey);
                 return new StatusSign(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new StatusSign", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new StatusSign", parentKey);
                 return new StatusSign(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -206,7 +207,7 @@ namespace PDT.Plugins.Crestron.IO
         {
             public StatusSignControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
                 TypeNames = new List<string>() { "statussign" };

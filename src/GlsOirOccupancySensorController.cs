@@ -7,7 +7,7 @@ using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class GlsOirOccupancySensorController:GlsOccupancySensorBaseController
     {
@@ -43,7 +43,7 @@ namespace PDT.Plugins.Crestron.IO
     {
         public GlsOccupancySensorBaseControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string> { "glsoirccn" };
@@ -66,17 +66,17 @@ namespace PDT.Plugins.Crestron.IO
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, Global.ControlSystem);
             }
             var cresnetBridge = DeviceManager.GetDeviceForKey(parentKey) as IHasCresnetBranches;
 
             if (cresnetBridge != null)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsOirCCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsOirCCn", parentKey);
                 return new GlsOirCCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
 

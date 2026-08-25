@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using PepperDash.Essentials.Core;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CrestronRemotePropertiesConfig
     {

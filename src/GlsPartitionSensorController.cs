@@ -4,6 +4,7 @@ using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro.GeneralIO;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Bridges.JoinMaps;
@@ -11,7 +12,7 @@ using PepperDash.Essentials.Core.Config;
 using System;
 using System.Collections.Generic;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     [Description("Wrapper class for GLS Cresnet Partition Sensor")]
     public class GlsPartitionSensorController : CrestronGenericBridgeableBaseDevice, IPartitionStateProvider
@@ -50,7 +51,7 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.LogDebug(this, "props are null.  Unable to deserialize into GlsPartSensorPropertiesConfig");
+                this.LogDebug("props are null.  Unable to deserialize into GlsPartSensorPropertiesConfig");
             }
 
             AddPreActivationAction(() =>
@@ -93,36 +94,36 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
         {
             if (_partitionSensor.IsOnline == false) return;
 
-            Debug.LogDebug(this, "Attempting to apply settings to sensor from config");
+            this.LogDebug("Attempting to apply settings to sensor from config");
 
             if (PropertiesConfig.Sensitivity != null)
             {
-                Debug.LogDebug(this, "Sensitivity found, attempting to set value '{0}' from config",
+                this.LogDebug("Sensitivity found, attempting to set value '{Sensitivity}' from config",
                     PropertiesConfig.Sensitivity);
                 _partitionSensor.Sensitivity.UShortValue = (ushort)PropertiesConfig.Sensitivity;
             }
             else
             {
-                Debug.LogDebug(this, "Sensitivity null, no value specified in config");
+                this.LogDebug("Sensitivity null, no value specified in config");
             }
 
             if (PropertiesConfig.EnableSensor != null)
             {
-                Debug.LogDebug(this, "Enable found, attempting to set value '{0}' from config",
+                this.LogDebug("Enable found, attempting to set value '{EnableSensor}' from config",
                     PropertiesConfig.EnableSensor);
 
                 _partitionSensor.Enable.BoolValue = PropertiesConfig.EnableSensor.Value;
             }
             else
             {
-                Debug.LogDebug(this, "Enable Null, no value specific in config. Enable MUST be set using SetEnableState to use sensor");
+                this.LogDebug("Enable Null, no value specific in config. Enable MUST be set using SetEnableState to use sensor");
             }
 
         }
 
         private void PartitionSensor_BaseEvent(GenericBase device, BaseEventArgs args)
         {
-            Debug.LogVerbose(this, "EventId: {0}, Index: {1}", args.EventId, args.Index);
+            this.LogVerbose("EventId: {EventId}, Index: {Index}", args.EventId, args.Index);
 
             switch (args.EventId)
             {
@@ -133,13 +134,13 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
                     }
                 case (GlsPartCn.PartitionSensedFeedbackEventId):
                     {
-                        Debug.LogDebug(this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
+                        this.LogDebug("Partition Sensed State: {PartitionSensed}", _partitionSensor.PartitionSensedFeedback.BoolValue);
                         PartitionPresentFeedback.FireUpdate();
                         break;
                     }
                 case (GlsPartCn.PartitionNotSensedFeedbackEventId):
                     {
-                        Debug.LogDebug(this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+                        this.LogDebug("Partition Not Sensed State: {PartitionNotSensed}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
                         PartitionNotSensedFeedback.FireUpdate();
                         break;
                     }
@@ -150,7 +151,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
                     }
                 default:
                     {
-                        Debug.LogVerbose(this, "Unhandled args.EventId: {0}", args.EventId);
+                        this.LogVerbose("Unhandled args.EventId: {EventId}", args.EventId);
                         break;
                     }
             }
@@ -159,7 +160,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
         public void SetTestMode(bool mode)
         {
             InTestMode = mode;
-            Debug.LogDebug(this, "InTestMode: {0}", InTestMode.ToString());
+            this.LogDebug("InTestMode: {InTestMode}", InTestMode.ToString());
         }
 
         public void SetTestEnableState(bool state)
@@ -170,11 +171,11 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
                 EnableFeedback.FireUpdate();
 
-                Debug.LogDebug(this, "TestEnableFeedback: {0}", TestEnableFeedback.ToString());
+                this.LogDebug("TestEnableFeedback: {TestEnableFeedback}", TestEnableFeedback.ToString());
                 return;
             }
 
-            Debug.LogDebug(this, "InTestMode: {0}, unable to set enable state: {1}", InTestMode.ToString(), state.ToString());
+            this.LogDebug("InTestMode: {InTestMode}, unable to set enable state: {State}", InTestMode.ToString(), state.ToString());
         }
 
         public void SetTestPartitionSensedState(bool state)
@@ -186,11 +187,11 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
                 PartitionPresentFeedback.FireUpdate();
                 PartitionNotSensedFeedback.FireUpdate();
 
-                Debug.LogDebug(this, "TestPartitionSensedFeedback: {0}", TestPartitionSensedFeedback.ToString());
+                this.LogDebug("TestPartitionSensedFeedback: {TestPartitionSensedFeedback}", TestPartitionSensedFeedback.ToString());
                 return;
             }
 
-            Debug.LogDebug(this, "InTestMode: {0}, unable to set partition state: {1}", InTestMode.ToString(), state.ToString());
+            this.LogDebug("InTestMode: {InTestMode}, unable to set partition state: {State}", InTestMode.ToString(), state.ToString());
         }
 
         public void SetTestSensitivityValue(int value)
@@ -200,11 +201,11 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
                 TestSensitivityFeedback = value;
 
                 SensitivityFeedback.FireUpdate();
-                Debug.LogDebug(this, "TestSensitivityFeedback: {0}", TestSensitivityFeedback);
+                this.LogDebug("TestSensitivityFeedback: {TestSensitivityFeedback}", TestSensitivityFeedback);
                 return;
             }
 
-            Debug.LogDebug(this, "InTestMode: {0}, unable to set sensitivity value: {1}", InTestMode.ToString(), value);
+            this.LogDebug("InTestMode: {InTestMode}, unable to set sensitivity value: {Value}", InTestMode.ToString(), value);
         }
 
         public void GetSettings()
@@ -212,19 +213,19 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
             var dash = new string('*', 50);
             CrestronConsole.PrintLine(string.Format("{0}\n", dash));
 
-            Debug.LogInformation(this, "Enabled State: {0}", _partitionSensor.EnableFeedback.BoolValue);
+            this.LogInformation("Enabled State: {EnabledState}", _partitionSensor.EnableFeedback.BoolValue);
 
-            Debug.LogInformation(this, "Partition Sensed State: {0}", _partitionSensor.PartitionSensedFeedback.BoolValue);
-            Debug.LogInformation(this, "Partition Not Sensed State: {0}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
+            this.LogInformation("Partition Sensed State: {PartitionSensed}", _partitionSensor.PartitionSensedFeedback.BoolValue);
+            this.LogInformation("Partition Not Sensed State: {PartitionNotSensed}", _partitionSensor.PartitionNotSensedFeedback.BoolValue);
 
-            Debug.LogInformation(this, "Sensitivity Value: {0}", _partitionSensor.SensitivityFeedback.UShortValue);
+            this.LogInformation("Sensitivity Value: {SensitivityValue}", _partitionSensor.SensitivityFeedback.UShortValue);
 
             CrestronConsole.PrintLine(string.Format("{0}\n", dash));
         }
 
         public void SetEnableState(bool state)
         {
-            Debug.LogVerbose(this, "Sensor is {0}, SetEnableState: {1}", _partitionSensor == null ? "null" : "not null", state);
+            this.LogVerbose("Sensor is {SensorState}, SetEnableState: {State}", _partitionSensor == null ? "null" : "not null", state);
             if (_partitionSensor == null)
                 return;
 
@@ -233,7 +234,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
         public void IncreaseSensitivity()
         {
-            Debug.LogVerbose(this, "Sensor is {0}, IncreaseSensitivity", _partitionSensor == null ? "null" : "not null");
+            this.LogVerbose("Sensor is {SensorState}, IncreaseSensitivity", _partitionSensor == null ? "null" : "not null");
             if (_partitionSensor == null)
                 return;
 
@@ -242,7 +243,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
         public void DecreaseSensitivity()
         {
-            Debug.LogVerbose(this, "Sensor is {0}, DecreaseSensitivity", _partitionSensor == null ? "null" : "not null");
+            this.LogVerbose("Sensor is {SensorState}, DecreaseSensitivity", _partitionSensor == null ? "null" : "not null");
             if (_partitionSensor == null)
                 return;
 
@@ -251,7 +252,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
         public void SetSensitivity(ushort value)
         {
-            Debug.LogVerbose(this, "Sensor is {0}, SetSensitivity: {1}", _partitionSensor == null ? "null" : "not null", value);
+            this.LogVerbose("Sensor is {SensorState}, SetSensitivity: {Value}", _partitionSensor == null ? "null" : "not null", value);
             if (_partitionSensor == null)
                 return;
 
@@ -272,11 +273,11 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
             }
             else
             {
-                Debug.LogInformation(this, "Please update config to use 'type': 'EiscApiAdvanced' to get all join map features for this device");
+                this.LogInformation("Please update config to use 'type': 'EiscApiAdvanced' to get all join map features for this device");
             }
 
-            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.LogInformation(this, "Linking to Bridge Type {0}", GetType().Name);
+            this.LogDebug("Linking to Trilist '{TrilistId}'", trilist.ID.ToString("X"));
+            this.LogInformation("Linking to Bridge Type {BridgeType}", GetType().Name);
 
             IsOnline.LinkInputSig(trilist.BooleanInput[joinMap.IsOnline.JoinNumber]);
             trilist.StringInput[joinMap.Name.JoinNumber].StringValue = _partitionSensor.Name;
@@ -319,7 +320,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
         {
             if (programEventType != eProgramStatusEventType.Stopping) return;
 
-            Debug.LogDebug(this, "Program stopping - unregistering partition sensor");
+            this.LogDebug("Program stopping - unregistering partition sensor");
 
             if (_partitionSensor == null) return;
 
@@ -347,16 +348,16 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
             if (parentKey.Equals("processor", StringComparison.CurrentCultureIgnoreCase))
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, Global.ControlSystem);
             }
 
             if (DeviceManager.GetDeviceForKey(parentKey) is IHasCresnetBranches cresnetBridge)
             {
-                Debug.LogInformation("Device {0} is a valid cresnet master - creating new GlsPartCn", parentKey);
+                Debug.LogInformation("Device {ParentKey} is a valid cresnet master - creating new GlsPartCn", parentKey);
                 return new GlsPartCn(cresnetId, cresnetBridge.CresnetBranches[(uint)branchId]);
             }
-            Debug.LogInformation("Device {0} is not a valid cresnet master", parentKey);
+            Debug.LogInformation("Device {ParentKey} is not a valid cresnet master", parentKey);
             return null;
         }
         #endregion
@@ -368,7 +369,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
             public GlsPartitionSensorControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "2.0.0";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
                 TypeNames = new List<string> { "glspartcn" };
             }

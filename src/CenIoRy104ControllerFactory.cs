@@ -4,7 +4,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     /// <summary>
     /// CEN-IO-RY Controller factory
@@ -16,7 +16,7 @@ namespace PDT.Plugins.Crestron.IO
         /// </summary>
         public CenIoRy104ControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string>() { "ceniory104" };
@@ -36,7 +36,7 @@ namespace PDT.Plugins.Crestron.IO
             var ipid = controlPropertiesConfig.IpIdInt;
             if (ipid != 0) return new CenIoRy104Controller(dc.Key, dc.Name, new CenIoRy104(ipid, Global.ControlSystem));
             
-            Debug.LogDebug("Factory failed to create a new CEN-IO-RY-104 Device using IP-ID-{0}", ipid);
+            Debug.LogDebug("Factory failed to create a new CEN-IO-RY-104 Device using IP-ID-{IpId}", ipid);
             return null;
         }
     }

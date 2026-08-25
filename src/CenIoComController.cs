@@ -3,10 +3,11 @@ using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class CenIoComController : CrestronGenericBridgeableBaseDevice, IComPorts
     {
@@ -45,10 +46,10 @@ namespace PDT.Plugins.Crestron.IO
             }
             else
             {
-                Debug.LogInformation(this, "Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
+                this.LogInformation("Please update config to use 'eiscapiadvanced' to get all join map features for this device.");
             }
 
-            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            this.LogDebug("Linking to Trilist '{TrilistId}'", trilist.ID.ToString("X"));
 
             // TX from SIMPL to hardware COM ports
             trilist.SetStringSigAction(joinMap.Com1.JoinNumber, s =>

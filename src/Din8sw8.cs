@@ -2,11 +2,12 @@
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.Lighting;
 using PepperDash.Core;
+using PepperDash.Core.Logging;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.CrestronIO;
 
-namespace PDT.Plugins.Crestron.IO
+namespace PepperDash.Essentials.Plugins
 {
     public class Din8sw8Controller : EssentialsDevice, ISwitchedOutputCollection
     {
@@ -28,7 +29,7 @@ namespace PDT.Plugins.Crestron.IO
 
             if (SwitchModule.Register() != eDeviceRegistrationUnRegistrationResponse.Success)
             {
-                Debug.LogVerbose(this, "Error registering Din8sw8. Reason: {0}", SwitchModule.RegistrationFailureReason);
+                this.LogVerbose("Error registering Din8sw8. Reason: {FailureReason}", SwitchModule.RegistrationFailureReason);
             }
 
             PopulateDictionary();
@@ -50,7 +51,7 @@ namespace PDT.Plugins.Crestron.IO
     {
         public Din8sw8ControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "2.0.0";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string>() { "din8sw8" };
