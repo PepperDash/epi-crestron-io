@@ -58,3 +58,273 @@ In the solution folder is a file named "PDT.EssentialsPluginTemplate.nuspec"
 There is no longer a requirement to adjust workflow files for nuget generation for private and public repositories.  This is now handled automatically in the workflow.
 
 __If you do not make these changes to the nuspec file, the project will not generate a nuget package__
+<!-- START Minimum Essentials Framework Versions -->
+### Minimum Essentials Framework Versions
+
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+- 3.0.0
+<!-- END Minimum Essentials Framework Versions -->
+<!-- START Config Example -->
+### Config Example
+
+```json
+{
+    "key": "GeneratedKey",
+    "uid": 1,
+    "name": "GeneratedName",
+    "type": "c2nrths",
+    "group": "Group",
+    "properties": {
+        "enablePir": true,
+        "enableLedFlash": true,
+        "shortTimeoutState": true,
+        "enableRawStates": true,
+        "remoteTimeout": "SampleValue",
+        "internalPhotoSensorMinChange": "SampleValue",
+        "externalPhotoSensorMinChange": "SampleValue",
+        "enableUsA": true,
+        "enableUsB": true,
+        "orWhenVacatedState": true,
+        "andWhenVacatedState": true,
+        "usSensitivityOccupied": "SampleValue",
+        "usSensitivityVacant": "SampleValue",
+        "pirSensitivityOccupied": "SampleValue",
+        "pirSensitivityVacant": "SampleValue"
+    }
+}
+```
+<!-- END Config Example -->
+<!-- START Supported Types -->
+### Supported Types
+
+- c2nrths
+- DinIo8
+- din-cencn2-poe
+- din-cencn2
+- dincencn2poe
+- dincencn2
+- ceniory104
+- din8sw8
+- ceniodigin104
+- cenodtocc
+- cenodtcpoe
+- statussign
+- hr150
+- hr310
+- hr100
+- cenioir104
+- c2nio
+<!-- END Supported Types -->
+<!-- START Join Maps -->
+### Join Maps
+
+#### Digitals
+
+| Join | Type (RW) | Description |
+| --- | --- | --- |
+| 1 | R | Device Online |
+
+#### Serials
+
+| Join | Type (RW) | Description |
+| --- | --- | --- |
+| 1 | R | Com 1 TX/RX |
+| 3 | R | Com 2 TX/RX |
+| 5 | R | Device Name |
+<!-- END Join Maps -->
+<!-- START Interfaces Implemented -->
+### Interfaces Implemented
+
+- ITemperatureSensor
+- IHumiditySensor
+- IIROutputPorts
+- IIOPorts
+- IRelayPorts
+- IComPorts
+- IHasCresnetBranches
+- IPartitionStateProvider
+- ISwitchedOutputCollection
+- ISwitchedOutput
+- IOccupancyStatusProvider
+- IHasFeedback
+- IHR52Button
+- IDigitalInputPorts
+<!-- END Interfaces Implemented -->
+<!-- START Base Classes -->
+### Base Classes
+
+- CrestronGenericBridgeableBaseDevice
+- C3CardControllerBase
+- CrestronGenericBaseDevice
+- GlsOccupancySensorBaseController
+- EssentialsDevice
+- EssentialsBridgeableDevice
+- JoinMapBaseAdvanced
+<!-- END Base Classes -->
+<!-- START Public Methods -->
+### Public Methods
+
+- public void SetTemperatureFormat(bool setToC)
+- public void SetTestMode(bool mode)
+- public void SetTestEnableState(bool state)
+- public void SetTestPartitionSensedState(bool state)
+- public void SetTestSensitivityValue(int value)
+- public void GetSettings()
+- public void SetEnableState(bool state)
+- public void IncreaseSensitivity()
+- public void DecreaseSensitivity()
+- public void SetSensitivity(ushort value)
+- public void SetOrWhenVacatedState(bool state)
+- public void SetAndWhenVacatedState(bool state)
+- public void SetUsAEnable(bool state)
+- public void SetUsBEnable(bool state)
+- public void IncrementUsSensitivityInOccupiedState(bool pressRelease)
+- public void DecrementUsSensitivityInOccupiedState(bool pressRelease)
+- public void IncrementUsSensitivityInVacantState(bool pressRelease)
+- public void DecrementUsSensitivityInVacantState(bool pressRelease)
+- public void On()
+- public void Off()
+- public void SetTestMode(bool mode)
+- public void SetTestOccupiedState(bool state)
+- public void SetIdentityMode(bool state)
+- public void SetPirEnable(bool state)
+- public void SetLedFlashEnable(bool state)
+- public void SetShortTimeoutState(bool state)
+- public void IncrementPirSensitivityInOccupiedState(bool pressRelease)
+- public void DecrementPirSensitivityInOccupiedState(bool pressRelease)
+- public void IncrementPirSensitivityInVacantState(bool pressRelease)
+- public void DecrementPirSensitivityInVacantState(bool pressRelease)
+- public void IncrementUsSensitivityInOccupiedState(bool pressRelease)
+- public void DecrementUsSensitivityInOccupiedState(bool pressRelease)
+- public void IncrementUsSensitivityInVacantState(bool pressRelease)
+- public void DecrementUsSensitivityInVacantState(bool pressRelease)
+- public void ForceOccupied()
+- public void ForceVacant()
+- public void EnableRawStates(bool state)
+- public void SetRemoteTimeout(ushort time)
+- public void SetInternalPhotoSensorMinChange(ushort value)
+- public void SetOrWhenVacatedState(bool state)
+- public void SetAndWhenVacatedState(bool state)
+- public void SetUsAEnable(bool state)
+- public void SetUsBEnable(bool state)
+- public void SetUsSensitivityOccupied(ushort sensitivity)
+- public void SetUsSensitivityVacant(ushort sensitivity)
+- public void SetPirSensitivityOccupied(ushort sensitivity)
+- public void SetPirSensitivityVacant(ushort sensitivity)
+- public void GetSettings()
+- public void SetTestMode(bool mode)
+- public void SetTestOccupiedState(bool state)
+- public void SetPirEnable(bool state)
+- public void SetLedFlashEnable(bool state)
+- public void SetShortTimeoutState(bool state)
+- public void IncrementPirSensitivityInOccupiedState(bool pressRelease)
+- public void DecrementPirSensitivityInOccupiedState(bool pressRelease)
+- public void IncrementPirSensitivityInVacantState(bool pressRelease)
+- public void DecrementPirSensitivityInVacantState(bool pressRelease)
+- public void ForceOccupied()
+- public void ForceOccupied(bool value)
+- public void ForceVacant()
+- public void ForceVacant(bool value)
+- public void EnableRawStates(bool state)
+- public void SetRemoteTimeout(ushort time)
+- public void SetInternalPhotoSensorMinChange(ushort value)
+- public void SetExternalPhotoSensorMinChange(ushort value)
+- public void EnableLedControl(bool red, bool green, bool blue)
+- public void SetColor(uint red, uint green, uint blue)
+- public void SetTrilistBool(BasicTriList trilist, uint join, bool b)
+- public void All_Factory_Sources_Set_MinimumEssentialsFrameworkVersion_To_Expected(string factoryClass)
+- public void All_Factory_Sources_Set_TypeNames(string factoryClass)
+- public void Factory_Source_Contains_TypeName(string factoryClass, string typeName)
+- public void No_Duplicate_TypeNames_Across_Factory_Sources()
+- public void Assembly_Loads_Successfully()
+- public void Assembly_Name_Matches_Expected()
+- public void Factory_Count_Matches_Expected()
+- public void Factory_Exists_ByName(string factoryName)
+- public void All_Factories_Have_Parameterless_Constructor()
+- public void Config_Class_Exists(string className)
+- public void Config_Has_Parameterless_Constructor(string className)
+- public void Config_Property_Has_JsonPropertyAttribute(string className, string propertyName, string jsonName)
+<!-- END Public Methods -->
+<!-- START Bool Feedbacks -->
+### Bool Feedbacks
+
+- TemperatureInCFeedback
+- EnableFeedback
+- PartitionPresentFeedback
+- PartitionNotSensedFeedback
+- OrWhenVacatedFeedback
+- AndWhenVacatedFeedback
+- UltrasonicAEnabledFeedback
+- UltrasonicBEnabledFeedback
+- RawOccupancyPirFeedback
+- RawOccupancyUsFeedback
+- OutputIsOnFeedback
+- RoomIsOccupiedFeedback
+- GraceOccupancyDetectedFeedback
+- RawOccupancyFeedback
+- PirSensorEnabledFeedback
+- LedFlashEnabledFeedback
+- ShortTimeoutEnabledFeedback
+- OrWhenVacatedFeedback
+- AndWhenVacatedFeedback
+- UltrasonicAEnabledFeedback
+- UltrasonicBEnabledFeedback
+- RawOccupancyPirFeedback
+- RawOccupancyUsFeedback
+- IdentityModeFeedback
+- RoomIsOccupiedFeedback
+- GraceOccupancyDetectedFeedback
+- RawOccupancyFeedback
+- PirSensorEnabledFeedback
+- LedFlashEnabledFeedback
+- ShortTimeoutEnabledFeedback
+- RedLedEnabledFeedback
+- GreenLedEnabledFeedback
+- BlueLedEnabledFeedback
+<!-- END Bool Feedbacks -->
+<!-- START Int Feedbacks -->
+### Int Feedbacks
+
+- TemperatureFeedback
+- HumidityFeedback
+- SensitivityFeedback
+- UltrasonicSensitivityInVacantStateFeedback
+- UltrasonicSensitivityInOccupiedStateFeedback
+- PirSensitivityInVacantStateFeedback
+- PirSensitivityInOccupiedStateFeedback
+- CurrentTimeoutFeedback
+- RemoteTimeoutFeedback
+- InternalPhotoSensorValue
+- ExternalPhotoSensorValue
+- UltrasonicSensitivityInVacantStateFeedback
+- UltrasonicSensitivityInOccupiedStateFeedback
+- PirSensitivityInVacantStateFeedback
+- PirSensitivityInOccupiedStateFeedback
+- CurrentTimeoutFeedback
+- LocalTimoutFeedback
+- InternalPhotoSensorValue
+- ExternalPhotoSensorValue
+- RedLedBrightnessFeedback
+- GreenLedBrightnessFeedback
+- BlueLedBrightnessFeedback
+<!-- END Int Feedbacks -->
+<!-- START String Feedbacks -->
+
+<!-- END String Feedbacks -->
