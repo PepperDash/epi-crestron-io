@@ -51,7 +51,7 @@ namespace PepperDash.Essentials.Plugins
     {
         public Din8sw8ControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string>() { "din8sw8" };

@@ -43,7 +43,7 @@ namespace PepperDash.Essentials.Plugins
     {
         public GlsOccupancySensorBaseControllerFactory()
         {
-            MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
+            MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
             TypeNames = new List<string> { "glsoirccn" };

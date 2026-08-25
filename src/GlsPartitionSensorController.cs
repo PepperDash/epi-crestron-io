@@ -369,7 +369,7 @@ if (_partitionSensor != null) CrestronInvoke.BeginInvoke(o => RegisterCrestronGe
 
             public GlsPartitionSensorControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
                 TypeNames = new List<string> { "glspartcn" };
             }

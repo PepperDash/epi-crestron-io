@@ -29,7 +29,7 @@ namespace PepperDash.Essentials.Plugins
         {
             public DinCenCn2ControllerFactory()
             {
-                MinimumEssentialsFrameworkVersion = "3.0.0-fix-correct-interface-name.1";
+                MinimumEssentialsFrameworkVersion = "3.0.0";
 
 
                 TypeNames = new List<string>() { "dincencn2", "dincencn2poe", "din-cencn2", "din-cencn2-poe" };
